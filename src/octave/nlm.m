@@ -2,6 +2,7 @@
 % 2) INVOKE THE OUTPUT OF A NON LOCAL MEANS FILTER IMPLEMENTED IN C TO FIX THE IMAGE.
 % 3) RENDER THE 2D ARRAYS IN GRAYSCALE.
 
+fprintf("--------------SCRIPT BEGINS--------------\n");
 pkg load image
 
 path = './data/';
@@ -15,11 +16,11 @@ fprintf('...begin %s...\n',mfilename);
 fprintf('...loading input data...\n')
 I = dlmread(strcat(path, 'house.txt')); 
 
-fprintf("Now input is ready to be parsed from our C code\n");
+fprintf("Input ready to be parsed from our C code\n");
 dlmwrite(strcat(path, 'house_c.txt'), size(I), 'delimiter', ' ');
 dlmwrite(strcat(path, 'house_c.txt'), I, '-append', 'delimiter', ' ');
 
-fprintf(' - normalizing image...\n')
+fprintf('Normalizing image...\n')
 I = normImg(I);
 
 % APPLY NOISE
@@ -27,7 +28,7 @@ J = imnoise(I, 'gaussian', 0, 0.001);
 
 % NON LOCAL MEANS OUTPUT IMPLEMENTED IN C
 fprintf("C code launched...\n")
-%system(./bin/v0.c)
+system("./bin/v0");
 If = dlmread(strcat(path, 'nlm.txt'));
 
 % RENDERING
@@ -47,9 +48,5 @@ figure('Name', 'Residual');
 imagesc(If-J); axis image;
 colormap gray;
 
-% for some reason the last image wont popup 
-figure('Name', 'Residual');
-imagesc(If-J); axis image;
-colormap gray;
-
 fprintf('...end %s...\n',mfilename);
+fprintf("--------------TO BE CONTINUED--------------\n");
