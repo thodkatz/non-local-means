@@ -33,4 +33,6 @@ void print_array(float *array, int m, int n);
 
 void print_output_file(FILE *f, float *array, int row, int col);
 
+void print_patch(float *patches, int patch_size, int pixels);
+
 #endif

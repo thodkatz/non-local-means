@@ -1,5 +1,5 @@
 CC = g++
-CFLAGS = -O3 -pedantic -Wall
+CFLAGS = -g -pedantic -Wall
 
 BIN = bin
 DIRSRC = src
