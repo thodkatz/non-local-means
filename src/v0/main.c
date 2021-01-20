@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
 
     printf("Reading image...\n");
     float *noise_image_array;
-    MALLOC(float, noise_image_array, m * n);
+    MALLOC(float, noise_image_array, m * n); // row major
     for(int i = 0; i< m; i++) {
         for(int j = 0; j < n; j++) {
             if(fscanf(noise_image_file, "%f", &noise_image_array[i*n + j]) != 1)
@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
 
     float filt_sigma = 0.02;
     int patch_size = 5; // one dimension of a 2d square patch
+    // patch sigma is for the gaussian weight applied per patch. It is the standard deviation of the gaussian applied.
     float patch_sigma = 5/3;
 
     printf("Non-local means filtering...\n");
