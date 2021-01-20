@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
     float filt_sigma = 0.02;
     int patch_size = 5; // one dimension of a 2d square patch
     // patch sigma is for the gaussian weight applied per patch. It is the standard deviation of the gaussian applied.
-    float patch_sigma = 5/3;
+    float patch_sigma = 5.0/3.0;
 
     printf("Non-local means filtering...\n");
     float *filtered_image_array;
