@@ -59,32 +59,11 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
             int x = i - (patch_size-1)/2;
             int y = j - (patch_size-1)/2;
             gauss_patch[i*patch_size + j] = exp(-(x * x + y * y) / (2 * patch_sigma * patch_sigma));
-            gauss_sum += gauss_patch[i*patch_size + j];
+            //gauss_sum += gauss_patch[i*patch_size + j];
         }
     }
-
-    printf("\nGaussian patch no normalization\n");
-    print_patch(gauss_patch, patch_size, 1);
-
-    printf("sum %f\n", gauss_sum);
-
-    float gauss_max = -1.0;
-    for(int i = 0; i < total_patch_size; i++) {
-        gauss_patch[i] /= gauss_sum; 
-        if(gauss_max < gauss_patch[i]) {
-            gauss_max = gauss_patch[i];
-        }
-    }
-
-    printf("max %f\n", gauss_max);
 
     printf("\nGaussian patch...\n");
-    print_patch(gauss_patch, patch_size, 1);
-
-    // do we need to normalize with max?
-    for(int i = 0; i < total_patch_size; i++) gauss_patch[i] /= gauss_max;
-
-    printf("\nGaussian patch with normalization (max)\n");
     print_patch(gauss_patch, patch_size, 1);
 
     // apply gaussian patch
@@ -93,6 +72,8 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
             patches[i*total_patch_size + k] *= gauss_patch[k];
         }
     }
+
+    print_patch(patches, patch_size, m*n);
 
     // euclidean distance between patches
 
