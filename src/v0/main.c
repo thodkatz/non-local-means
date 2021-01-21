@@ -14,6 +14,9 @@ int main(int argc, char *argv[]) {
         exit(-1);  
     }
 
+    struct timespec tic;
+    struct timespec toc;
+
     int m, n;
     fscanf(noise_image_file, "%d", &m);
     fscanf(noise_image_file, "%d", &n);
@@ -38,7 +41,9 @@ int main(int argc, char *argv[]) {
 
     printf("Non-local means filtering...\n");
     float *filtered_image_array;
+    TIC()
     filtered_image_array = non_local_means(m, n, noise_image_array, patch_size, filt_sigma, patch_sigma);
+    TOC("Time elapsed filtering image: %lf\n")
 
     printf("Writing output data to file...\n");
     FILE *filtered_image_file;

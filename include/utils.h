@@ -7,6 +7,9 @@
 
 #define MALLOC(type, x, len) if((x = (type*)malloc(len * sizeof(type))) == NULL) \
                                 {printf("Bad alloc\n"); exit(1);}
+
+#define CALLOC(type, x, len) if((x = (type*)calloc(len, sizeof(type))) == NULL) \
+                                {printf("Bad alloc\n"); exit(1);}
 /*
  * Required to create two objects of struct timespec tic, toc
  */
