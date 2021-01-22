@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <time.h>
+#include <string.h>
 #include "v0.h"
 #include "utils.h"
 
@@ -16,20 +17,18 @@
 float *non_local_means(int m, int n, float *noise_image, int patch_size, float filt_sigma, float patch_sigma) {
     struct timespec tic;
     struct timespec toc;
+    int total_patch_size = patch_size * patch_size;
 
     float *filtered_image;
     MALLOC(float, filtered_image, m * n);
 
-    int total_patch_size = patch_size * patch_size;
-
     float *patches;
     patches = create_patches(noise_image, patch_size, m, n);
-
-    print_patch(patches, patch_size, m * n);
+    printf("Print patches...\n");
+    //print_patch(patches, patch_size, m * n);
 
     float *gauss_patch;
     gauss_patch = create_gauss_kernel(patch_size, patch_sigma);
-
     printf("\nGaussian patch...\n");
     print_patch(gauss_patch, patch_size, 1);
 
@@ -44,7 +43,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     }
 
     printf("\nPatches after gaussian weights\n");
-    print_patch(patches, patch_size, m*n);
+    //print_patch(patches, patch_size, m*n);
 
     // calculate distances
     
@@ -57,7 +56,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     TOC("Time elapsed calculating distance matrix: %lf\n")
 
     printf("Distances between patches per patch\n");
-    print_array(weights , m*n, m*n);
+    //print_array(weights , m*n, m*n);
 
     // weight formula per patch: D = exp(-D.^2 / filt_sigma)
     
@@ -91,7 +90,6 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     printf("Filtered image\n");
     print_array(filtered_image, m, n);
 
-
     free(patches);
     free(gauss_patch);
     free(weights);
@@ -107,24 +105,82 @@ float *create_patches(float *image, int patch_size, int m, int n) {
     MALLOC(float, patches, m*n*total_patch_size);
     for(int i = 0; i < m*n*total_patch_size; i++) patches[i] = OUT_OF_BOUNDS;
 
+    // padding noise image symmetric
+    float *image_padded;
+    image_padded = padding_image(image, m, n, patch_size);
+
+    /* printf("Padding image...\n"); */
+    /* print_array(image_padded, m + (patch_size-1), n + (patch_size-1)); */
+    /* printf("\n"); */
+
+    int col_pad = (patch_size-1)/2;
+
     for(int i = 0; i < m; i++) {
         for(int j = 0; j < n; j++) {
-            int top_left_corner_x = i - (patch_size - 1)/2;
-            int top_left_corner_y = j - (patch_size - 1)/2;
+            int top_left_corner_x = i;
+            int top_left_corner_y = j;
             int patch_num = i*n + j;
-            for(int patch_x = top_left_corner_x, patch_id = 0; patch_x < top_left_corner_x + patch_size; patch_x++) {
+            for(int patch_x = top_left_corner_x, patch_id = 0; patch_x < top_left_corner_x + patch_size; patch_x++) { 
                 for(int patch_y = top_left_corner_y; patch_y < top_left_corner_y + patch_size; patch_y++) {
-                    if((0<= patch_x && patch_x <= m-1) && (0<= patch_y && patch_y <= n-1)) {
-                        int pixel = patch_x*n + patch_y;
-                        patches[patch_num*total_patch_size + patch_id] = image[pixel];
-                    }
+                    int pixel = patch_x*(n + 2*col_pad) + patch_y;
+                    patches[patch_num*total_patch_size + patch_id] = image_padded[pixel];
                     patch_id++;
                 }
             }
         }
     }
 
+    free(image_padded);
+
     return patches;
+}
+
+/*
+ * source: https://www.programmersought.com/article/69882315520/
+ *
+ * Matlab utility padarray symmetric. Similar approach with OpenCV PadArray.
+ *
+ * \param m Rows
+ * \param n Columns
+ */
+float *padding_image(float *image, int m, int n, int patch_size) {
+    float *image_padded;
+    MALLOC(float, image_padded, (m + patch_size-1) * (n + patch_size-1));
+
+    int row_pad = (patch_size-1)/2;
+    int col_pad = (patch_size-1)/2;
+
+    // copy the original image
+
+    for(int i = 0; i < m; i++) {
+        copy_row2padded(image_padded, image, i + row_pad, i, m, col_pad);
+    }
+
+    // copy boarders
+
+    for(int i = 0; i < row_pad; i++) {
+        copy_row2padded(image_padded, image, row_pad - i - 1, i, m, col_pad);
+        copy_row2padded(image_padded, image, (m+row_pad) + i, m - i - 1, m, col_pad);
+    }
+
+    for(int i = 0; i < col_pad; i++) {
+        int offset = n + 2*col_pad;
+        copy_col2padded(image_padded, image_padded + col_pad, col_pad - i - 1, i, n + 2*row_pad, offset);
+        copy_col2padded(image_padded, image_padded + col_pad, (n+col_pad) + i, n - i - 1, n + 2*row_pad, offset);
+    }
+
+    return image_padded;
+}
+
+void copy_row2padded(float *destination, float *source, int row_dest_idx, int row_source_idx, int size, int col_pad) {
+    int offset = size + 2*col_pad;
+    memcpy(destination + row_dest_idx * offset + col_pad, source  + row_source_idx * size, sizeof(float)*size);
+}
+
+void copy_col2padded(float *destination, float *source, int col_dest_idx, int col_source_idx, int size, int offset) {
+    for(int i = 0; i < size; i++) {
+        destination[i*offset + col_dest_idx] = source[i*offset + col_source_idx];
+    }
 }
 
 float *create_gauss_kernel(int patch_size, float patch_sigma) {
@@ -169,12 +225,10 @@ float euclidean_distance_patch(float *patch1, float *patch2, int patch_size) {
 
     float distance = 0;
     for(int i = 0; i < total_patch_size; i++) {
-        if(patch1[i] != OUT_OF_BOUNDS && patch2[i] != OUT_OF_BOUNDS) {
             distance += pow(patch1[i] - patch2[i], 2); 
-        }
     }
 
-    return distance;
+    return sqrt(distance);
 }
 
 float apply_weighted_pixels(float *weights, float *image, int image_size) {

@@ -18,7 +18,8 @@ double diff_time (struct timespec start, struct timespec end) {
 void print_array(float *array, int row, int col) {
     for (int i = 0; i < row; i++) {
         for (int j = 0; j < col; j++) {
-            printf("%0.6f ", array[i*col + j]);
+            if(j!=col-1) printf("%0.5f ", array[i*col + j]);
+            else         printf("%0.5f",  array[i*col + j]);
         }
         printf("\n");
     }
@@ -27,7 +28,8 @@ void print_array(float *array, int row, int col) {
 void print_output_file(FILE *f, float *array, int row, int col) {
     for(int i = 0; i < row; i++) {
         for(int j = 0; j < col; j++){
-            fprintf(f, "%0.6f ", array[i*col + j]);
+            if(j!=col-1) fprintf(f, "%0.5f ", array[i*col + j]);
+            else         fprintf(f, "%0.5f", array[i*col + j]);
         } 
         fprintf(f, "\n");
     }
@@ -39,7 +41,8 @@ void print_patch(float *patches, int patch_size, int pixels) {
     for(int i = 0; i < pixels; i++) {
         for(int j = 0; j < patch_size; j++) {
             for(int k = 0; k < patch_size; k++) {
-                printf("%0.6f ", patches[i*total_patch_size + j*patch_size + k]);
+                if(k!=patch_size-1) printf("%0.5f ", patches[i*total_patch_size + j*patch_size + k]);
+                else                printf("%0.5f", patches[i*total_patch_size + j*patch_size + k]);
             }
             printf("\n");
         }

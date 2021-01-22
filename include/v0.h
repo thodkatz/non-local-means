@@ -13,6 +13,12 @@ float *non_local_means(int m, int n, float *noise_image_array, int patch_size, f
  */
 float *create_patches(float *image, int patch_size, int m, int n);
 
+float *padding_image(float *image, int m, int n, int patch_size);
+
+void copy_row2padded(float *destination, float *source, int row_dest_idx, int row_source_idx, int size, int col_pad);
+
+void copy_col2padded(float *destination, float *source, int col_dest_idx, int col_source_idx, int size, int offset);
+
 /*
  * \brief Create a Gaussian kernel symmetric
  *

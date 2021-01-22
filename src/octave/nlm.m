@@ -19,23 +19,26 @@ fprintf('...begin %s...\n',mfilename);
 fprintf('...loading input data...\n')
 I = dlmread(strcat(path, 'house.txt')); 
 
-fprintf("Input ready to be parsed from our C code\n");
-dlmwrite(strcat(path, 'house_c.txt'), size(I), 'delimiter', ' ');
-dlmwrite(strcat(path, 'house_c.txt'), I, '-append', 'delimiter', ' ');
-
 % NORMALIZING
-fprintf('Normalizing image... 0 - 1 \n')
+fprintf("Normalizing image (0 - 1)...\n");
 I = normImg(I);
+dlmwrite(strcat(path, 'normalized_image.txt'), I, 'delimiter', ' ', 'precision', '%.06f');
 
 % APPLY NOISE
-J = imnoise(I, 'gaussian', 0, 0.001);
+fprintf("Applying noise...\n");
+%J = imnoise(I, 'gaussian', 0, 0.001);
+J = dlmread(strcat(path, 'noise_image_matlab.txt'));
+
+fprintf("Input ready to be parsed from our C code\n");
+dlmwrite(strcat(path, 'noise_image.txt'), size(J), 'delimiter', ' ');
+dlmwrite(strcat(path, 'noise_image.txt'), J, '-append', 'delimiter', ' ', 'precision', '%.06f');
 
 % NON LOCAL MEANS OUTPUT IMPLEMENTED IN C
 fprintf("C code launched...\n")
 args = argv();
 exe = strcat("./bin/", args{1});
 system(exe);
-If = dlmread(strcat(path, 'nlm_test.txt'));
+If = dlmread(strcat(path, 'filtered_image_test.txt'));
 
 % RENDERING
 figure('Name','Original Image');
