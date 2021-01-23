@@ -53,7 +53,6 @@ system(exe);
 If = dlmread([path 'filtered_image.txt']);
 fprintf("\033[1mC CODE ENDED...\033[0m\n\n");
 
-% NON LOCAL MEANS IMPLEMENTED IN OCTAVE/MATLAB
 Params = dlmread([path 'parameters.txt']);
 filtSigma = Params(1);
 patchSize = [Params(2) Params(2)];
@@ -63,6 +62,7 @@ patchSigma = Params(3);
 if Flag == '--debug'
     fprintf("Debugging...\n");
     cd src/octave/
+    % NON LOCAL MEANS IMPLEMENTED IN OCTAVE/MATLAB
     IfOctave = nonLocalMeans(J, patchSize, filtSigma, patchSigma);
 
     % CHECK IF PATCHES ARE THE SAME
@@ -72,9 +72,9 @@ if Flag == '--debug'
     PatchesC      = ceil(100 .* PatchesC)./100;
 
     if PatchesOctave == PatchesC
-        fprintf("\x1B[32m \xE2\x9C\x94 Patches applied with gaussian weights\x1B[0m\n");
+        fprintf("\x1B[32m \xE2\x9C\x94 Patches \x1B[0m\n");
     elseif
-        fprintf("\x1B[31m \xE2\x9D\x8C Patches applied with gaussian weights\x1B[0m\n"); 
+        fprintf("\x1B[31m \xE2\x9D\x8C Patches \x1B[0m\n"); 
         %dlmwrite(['../../' path 'debug/errors/.txt'], PatchesOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], PatchesC, 'delimiter', ' ', 'precision', '%.02f');
     end
@@ -86,9 +86,9 @@ if Flag == '--debug'
     DistancesC      = ceil(10 .* DistancesC)./10;
 
     if DistancesOctave == DistancesC
-        fprintf("\x1B[32m \xE2\x9C\x94 Distances\x1B[0m\n"); 
+        fprintf("\x1B[32m \xE2\x9C\x94 Distances \x1B[0m\n"); 
     elseif
-        fprintf("\x1B[31m \xE2\x9D\x8C Distances\x1B[0m\n");
+        fprintf("\x1B[31m \xE2\x9D\x8C Distances \x1B[0m\n");
         %dlmwrite(['../../' path 'debug/test1.txt'], DistancesOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], DistancesC, 'delimiter', ' ', 'precision', '%.02f');
     end
@@ -100,9 +100,9 @@ if Flag == '--debug'
     WeightsC      = ceil(10 .* DistancesC)./10;
 
     if WeightsOctave == WeightsC
-        fprintf("\x1B[32m \xE2\x9C\x94 Weights\x1B[0m\n"); 
+        fprintf("\x1B[32m \xE2\x9C\x94 Weights \x1B[0m\n"); 
     elseif
-        fprintf("\x1B[31m \xE2\x9D\x8C Weights\x1B[0m\n");
+        fprintf("\x1B[31m \xE2\x9D\x8C Weights \x1B[0m\n");
         %dlmwrite(['../../' path 'debug/test1.txt'], WeightsOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], WeightsC, 'delimiter', ' ', 'precision', '%.02f');
     end
@@ -114,9 +114,9 @@ if Flag == '--debug'
     FilteredC      = ceil(100 .* FilteredC)./100;
 
     if FilteredOctave == FilteredC
-        fprintf("\x1B[32m \xE2\x9C\x94 Filtering\x1B[0m\n"); 
+        fprintf("\x1B[32m \xE2\x9C\x94 Filtering \x1B[0m\n"); 
     elseif
-        fprintf("\x1B[31m \xE2\x9D\x8C Filtering\x1B[0m\n");
+        fprintf("\x1B[31m \xE2\x9D\x8C Filtering \x1B[0m\n");
         %dlmwrite(['../../' path 'debug/test1.txt'], FilteredOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], FilteredC, 'delimiter', ' ', 'precision', '%.02f');
     end
