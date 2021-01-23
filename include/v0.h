@@ -4,7 +4,7 @@
 /*
  * \brief Non-local means filter CPU
  */
-float *non_local_means(int m, int n, float *noise_image_array, int patch_size, float filt_sigma, float patch_sigma);
+float *non_local_means(int m, int n, float *noise_image_array, int patch_size, float filt_sigma, float patch_sigma, int argc, char *argv[]);
 
 /*
  * \brief Create a 2d array that each row is representing a patch in a row major format
