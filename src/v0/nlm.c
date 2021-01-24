@@ -24,13 +24,9 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     float *patches;
     patches = create_patches(noise_image, patch_size, m, n);
     TOC("Time elapsed creating patches: %lf\n")
-    //printf("Print patches...\n");
-    //print_patch(patches, patch_size, m * n);
 
     float *gauss_patch;
     gauss_patch = create_gauss_kernel(patch_size, patch_sigma);
-    //printf("\nGaussian patch...\n");
-    //print_patch(gauss_patch, patch_size, 1);
 
     // apply gaussian patch
    
@@ -44,9 +40,6 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
         }
     }
     TOC("Time elapsed applying guassian patch: %lf\n")
-
-    //printf("\nPatches after gaussian weights\n");
-    //print_patch(patches, patch_size, m*n);
 
     FILE *debug_patches;
     if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
@@ -63,11 +56,8 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     float *weights;
     printf("\nCalculating distance matrix...\n");
     TIC()
-    weights = euclidean_distance_matrix(patches, patch_size, m, n);
+    weights = euclidean_distance_symmetric_matrix(patches, patch_size, m*n, m*n);
     TOC("Time elapsed calculating distance matrix: %lf\n")
-
-    //printf("Distances between patches per patch\n");
-    //print_array(weights , m*n, m*n);
 
     FILE *debug_distances;
     if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
@@ -94,7 +84,6 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     }
     TOC("Time elapsed calculating weights: %lf\n")
 
-    //print_array(weights, m*n, m*n);
     FILE *debug_weights;
     if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
         printf("Writing weights to file. Mode: \033[1mdebug\033[0m...\n");
@@ -117,8 +106,6 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     }
     TOC("Time elapsed filtering image: %lf\n")
 
-    //printf("Filtered image\n");
-    //print_array(filtered_image, m, n);
     FILE *debug_filtering;
     if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
         printf("Writing filtering image to file. Mode: \033[1mdebug\033[0m...\n");
@@ -145,10 +132,6 @@ float *create_patches(float *image, int patch_size, int m, int n) {
     // padding noise image symmetric
     float *image_padded;
     image_padded = padding_image(image, m, n, patch_size);
-
-    /* printf("Padding image...\n"); */
-    /* print_array(image_padded, m + (patch_size-1), n + (patch_size-1)); */
-    /* printf("\n"); */
 
     int col_pad = (patch_size-1)/2;
 
@@ -240,16 +223,31 @@ float *create_gauss_kernel(int patch_size, float patch_sigma) {
 }
 
 // nearness is determined by how similar is the intensity of the pixels
-float *euclidean_distance_matrix(float *patches, int patch_size, int m, int n) {
+float *euclidean_distance_matrix(float *patches, int patch_size, int rows, int cols) {
     int total_patch_size = patch_size * patch_size;
-    int len_mat = m*n; // symmetric (m*n x m*n)
 
     float *distance;
-    MALLOC(float, distance, m*n * m*n);
+    MALLOC(float, distance, rows * cols);
 
-    for(int i = 0; i < len_mat; i++) {
-        for(int j = 0; j < len_mat; j++) {
-            distance[i*(len_mat) + j] = euclidean_distance_patch(patches + i*total_patch_size, patches + j*total_patch_size, patch_size);
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            distance[i*cols + j] = euclidean_distance_patch(patches + i*total_patch_size, patches + j*total_patch_size, patch_size);
+        }
+    }
+
+    return distance;
+}
+
+float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int rows, int cols) {
+    int total_patch_size = patch_size * patch_size;
+
+    float *distance;
+    MALLOC(float, distance, rows * cols);
+
+    for(int i = 0; i < rows; i++) {
+        for(int j = i; j < cols; j++) {
+            distance[i*cols + j] = euclidean_distance_patch(patches + i*total_patch_size, patches + j*total_patch_size, patch_size);
+            distance[j*cols + i] = distance[i*cols + j];
         }
     }
 

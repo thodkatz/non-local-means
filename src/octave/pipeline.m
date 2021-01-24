@@ -60,63 +60,68 @@ patchSigma = Params(3);
 
 % VALIDATION
 if Flag == '--debug'
-    fprintf("Debugging...\n");
+    fprintf("Validation...\n");
+    fprintf("This will take a reasonable amount of time. Be patient :)\n");
     cd src/octave/
     % NON LOCAL MEANS IMPLEMENTED IN OCTAVE/MATLAB
     IfOctave = nonLocalMeans(J, patchSize, filtSigma, patchSigma);
 
     % CHECK IF PATCHES ARE THE SAME
     PatchesOctave = dlmread(['../../' path 'debug/patches_oct.txt']);
-    PatchesOctave = ceil(100 .* PatchesOctave)./100;
     PatchesC      = dlmread(['../../' path 'debug/patches_c.txt']);
-    PatchesC      = ceil(100 .* PatchesC)./100;
+    ErrorPatches = abs(PatchesOctave - PatchesC);
+    ErrorPatches = max(ErrorPatches(:));
 
-    if PatchesOctave == PatchesC
+    if ErrorPatches < 0.001
         fprintf("\x1B[32m \xE2\x9C\x94 Patches \x1B[0m\n");
     elseif
         fprintf("\x1B[31m \xE2\x9D\x8C Patches \x1B[0m\n"); 
+        fprintf("Patches error: %f\n", ErrorPatches);
         %dlmwrite(['../../' path 'debug/errors/.txt'], PatchesOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], PatchesC, 'delimiter', ' ', 'precision', '%.02f');
     end
 
     % CHECK DISTANCE MATRIX
     DistancesOctave = dlmread(['../../' path 'debug/distances_oct.txt']);
-    DistancesOctave = ceil(10 .* DistancesOctave)./10;
     DistancesC      = dlmread(['../../' path 'debug/distances_c.txt']);
-    DistancesC      = ceil(10 .* DistancesC)./10;
+    ErrorDistances = abs(DistancesOctave - DistancesC);
+    ErrorDistances = max(ErrorDistances(:));
 
-    if DistancesOctave == DistancesC
+    if ErrorDistances < 0.001
         fprintf("\x1B[32m \xE2\x9C\x94 Distances \x1B[0m\n"); 
     elseif
         fprintf("\x1B[31m \xE2\x9D\x8C Distances \x1B[0m\n");
+        fprintf("Distances error: %f\n", ErrorDistances);
         %dlmwrite(['../../' path 'debug/test1.txt'], DistancesOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], DistancesC, 'delimiter', ' ', 'precision', '%.02f');
     end
 
     % CHECK WEIGHTS
     WeightsOctave = dlmread(['../../' path 'debug/weights_oct.txt']);
-    WeightsOctave = ceil(10 .* DistancesOctave)./10;
     WeightsC      = dlmread(['../../' path 'debug/weights_c.txt']);
-    WeightsC      = ceil(10 .* DistancesC)./10;
+    ErrorWeights = abs(WeightsOctave - WeightsC);
+    ErrorWeights = max(ErrorWeights(:));
 
-    if WeightsOctave == WeightsC
+    if ErrorWeights < 0.001
         fprintf("\x1B[32m \xE2\x9C\x94 Weights \x1B[0m\n"); 
     elseif
         fprintf("\x1B[31m \xE2\x9D\x8C Weights \x1B[0m\n");
+        fprintf("Weights error: %f\n", ErrorWeights);
         %dlmwrite(['../../' path 'debug/test1.txt'], WeightsOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], WeightsC, 'delimiter', ' ', 'precision', '%.02f');
     end
 
     % CHECK FILTERED IMAGE
     FilteredOctave = dlmread(['../../' path 'debug/filtered_image_oct.txt']);
-    FilteredOctave = ceil(100 .* FilteredOctave)./100;
     FilteredC      = dlmread(['../../' path 'debug/filtered_image_c.txt']);
-    FilteredC      = ceil(100 .* FilteredC)./100;
+    ErrorFiltering = abs(FilteredOctave - FilteredC);
+    ErrorFiltering = max(ErrorFiltering(:));
 
-    if FilteredOctave == FilteredC
+    if ErrorFiltering < 0.001
         fprintf("\x1B[32m \xE2\x9C\x94 Filtering \x1B[0m\n"); 
     elseif
         fprintf("\x1B[31m \xE2\x9D\x8C Filtering \x1B[0m\n");
+        fprintf("Filtering error: %f\n", ErrorFiltering);
         %dlmwrite(['../../' path 'debug/test1.txt'], FilteredOctave, 'delimiter', ' ', 'precision', '%.02f');
         %dlmwrite(['../../' path 'debug/test2.txt'], FilteredC, 'delimiter', ' ', 'precision', '%.02f');
     end

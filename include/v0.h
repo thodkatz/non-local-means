@@ -31,7 +31,9 @@ void copy_col2padded(float *destination, float *source, int col_dest_idx, int co
  */
 float *create_gauss_kernel(int patch_size, float patch_sigma);
 
-float *euclidean_distance_matrix(float *patches, int patch_size, int m, int n);
+float *euclidean_distance_matrix(float *patches, int patch_size, int rows, int cols);
+
+float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int rows, int cols);
 
 float euclidean_distance_patch(float *patch1, float *patch2, int patch_size);
 
