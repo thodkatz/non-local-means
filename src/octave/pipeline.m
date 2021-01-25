@@ -31,8 +31,9 @@ I = normImg(I);
 
 % APPLY NOISE
 fprintf("Applying noise...\n");
-J = imnoise(I, 'gaussian', 0, 0.001);
-%J = dlmread([path 'noise_image_matlab.txt']);
+%J = imnoise(I, 'gaussian', 0, 0.001);
+%dlmwrite([path 'noise_image_matlab.txt'], J, '-append', 'delimiter', ' ', 'precision', '%.06f');
+J = dlmread([path 'noise_image_matlab.txt']);
 
 fprintf("Input ready to be parsed from our C code\n");
 dlmwrite([path 'noise_image.txt'], size(J), 'delimiter', ' ');
@@ -68,7 +69,7 @@ if Flag == '--debug'
 
     % CHECK IF PATCHES ARE THE SAME
     PatchesOctave = dlmread(['../../' path 'debug/patches_oct.txt']);
-    PatchesC      = dlmread(['../../' path 'debug/patches_c.txt']);
+    PatchesC      = dlmread(['../../' path 'debug/v0/patches_c.txt']);
     ErrorPatches = abs(PatchesOctave - PatchesC);
     ErrorPatches = max(ErrorPatches(:));
 
@@ -83,7 +84,7 @@ if Flag == '--debug'
 
     % CHECK DISTANCE MATRIX
     DistancesOctave = dlmread(['../../' path 'debug/distances_oct.txt']);
-    DistancesC      = dlmread(['../../' path 'debug/distances_c.txt']);
+    DistancesC      = dlmread(['../../' path 'debug/v0/distances_c.txt']);
     ErrorDistances = abs(DistancesOctave - DistancesC);
     ErrorDistances = max(ErrorDistances(:));
 
@@ -98,7 +99,7 @@ if Flag == '--debug'
 
     % CHECK WEIGHTS
     WeightsOctave = dlmread(['../../' path 'debug/weights_oct.txt']);
-    WeightsC      = dlmread(['../../' path 'debug/weights_c.txt']);
+    WeightsC      = dlmread(['../../' path 'debug/v0/weights_c.txt']);
     ErrorWeights = abs(WeightsOctave - WeightsC);
     ErrorWeights = max(ErrorWeights(:));
 
@@ -113,7 +114,7 @@ if Flag == '--debug'
 
     % CHECK FILTERED IMAGE
     FilteredOctave = dlmread(['../../' path 'debug/filtered_image_oct.txt']);
-    FilteredC      = dlmread(['../../' path 'debug/filtered_image_c.txt']);
+    FilteredC      = dlmread(['../../' path 'debug/'  args{1} '/filtered_image_c.txt']);
     ErrorFiltering = abs(FilteredOctave - FilteredC);
     ErrorFiltering = max(ErrorFiltering(:));
 

@@ -14,11 +14,11 @@ INC = -I include
 
 $(shell mkdir -p bin)
 
-all: v0
-
 v0: $(SRC_v0)
 	$(CC) $(CFLAGS) $^ $(INC) -o $(BIN)/$@
 
+v1: $(SRC_v1)
+	$(CC) $(CFLAGS) $^ $(INC) -o $(BIN)/$@
 
 .PHONY: clean v0
 
