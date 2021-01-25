@@ -1,13 +1,20 @@
-#include "v1.cuh"
+#include "utils.cuh"
 
 __global__ void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
 
 	int tid = threadIdx.x + blockIdx.x * blockDim.x;
 	int stride = blockDim.x * gridDim.x;
 
+	if(tid == 2) {
+		printf("Hello, I am 2\n");
+	}
+
 	for(int pixel = tid; pixel < total_pixels; pixel+=stride) {
-        float *weights = (float*)malloc(total_pixels * sizeof(float));
-        weights = euclidean_distance_matrix_per_pixel(patches, patch_size, pixel, total_pixels);
+		printf("Hello, I am %d pixel\n", pixel);
+		float *weights = (float*)malloc(total_pixels * sizeof(float));
+		euclidean_distance_matrix_per_pixel(weights, patches, patch_size, pixel, total_pixels);
+		//weights[pixel] = pixel;
+		//printf("Weight: %f \n", weights[pixel]);
 
         float max = -1.0;
         float sum_weights = 0;
@@ -23,21 +30,20 @@ __global__ void filtering(float *patches, int patch_size, float filt_sigma, floa
         filtered_image[pixel] = apply_weighted_pixels(weights, noise_image, total_pixels);
         filtered_image[pixel] /= sum_weights;
 
-        free(weights);
+		free(weights);
     }
+
 }
 
 // nearness is determined by how similar is the intensity of the pixels
-__device__ float *euclidean_distance_matrix_per_pixel(float *patches, int patch_size, int pixel, int cols) {
+__device__ void euclidean_distance_matrix_per_pixel(float *weights, float *patches, int patch_size, int pixel, int cols) {
     int total_patch_size = patch_size * patch_size;
 
-    float *distance = (float*)malloc(cols * sizeof(float));
-
     for(int j = 0; j < cols; j++) {
-        distance[j] = euclidean_distance_patch(patches + pixel*total_patch_size, patches + j*total_patch_size, patch_size);
+        weights[j] = euclidean_distance_patch(patches + pixel*total_patch_size, patches + j*total_patch_size, patch_size);
+		printf("Weights: %f \n", weights[j]);
     }
 
-    return distance;
 }
 
 // take two patches and calculate their distance
@@ -45,10 +51,12 @@ __device__ float euclidean_distance_patch(float *patch1, float *patch2, int patc
     int total_patch_size = patch_size * patch_size;
 
     float distance = 0;
-    for(int i = 0; i < total_patch_size; i++) {
-            distance += pow(patch1[i] - patch2[i], 2); 
-    }
 
+    for(int i = 0; i < total_patch_size; i++) {
+		distance += pow(patch1[i] - patch2[i], 2); 
+    }
+	printf("Distance %f\n", distance);
+	
     return sqrt(distance);
 }
 

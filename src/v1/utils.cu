@@ -4,7 +4,7 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
-#include "utils.h"
+#include "utils.cuh"
 
 double diff_time (struct timespec start, struct timespec end) {
     uint32_t diff_sec = (end.tv_sec - start.tv_sec);
@@ -74,12 +74,8 @@ void print_patch_file(FILE *f, float *patches, int patch_size, int pixels) {
  * TODO: how to make use of missing values in "special" patches? Wrap the image?
  */
 #define OUT_OF_BOUNDS -1.0
-float *create_patches(float *image, int patch_size, int m, int n) {
+void create_patches(float *patches, float *image, int patch_size, int m, int n) {
     int total_patch_size = patch_size * patch_size;
-
-    float *patches;
-    MALLOC(float, patches, m*n*total_patch_size);
-    for(int i = 0; i < m*n*total_patch_size; i++) patches[i] = OUT_OF_BOUNDS;
 
     // padding noise image symmetric
     float *image_padded;
@@ -103,8 +99,6 @@ float *create_patches(float *image, int patch_size, int m, int n) {
     }
 
     free(image_padded);
-
-    return patches;
 }
 
 /*

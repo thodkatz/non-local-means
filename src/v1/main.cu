@@ -3,8 +3,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "utils.h"
 #include "v1.h"
+#include "utils.cuh"
 
 int main(int argc, char *argv[]) {
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
     printf("Reading image...\n");
     float *noise_image_array;
-    MALLOC(float, noise_image_array, m * n); // row major
+	cudaMallocManaged(&noise_image_array, m * n * sizeof(float));
     for(int i = 0; i< m; i++) {
         for(int j = 0; j < n; j++) {
             if(fscanf(noise_image_file, "%f", &noise_image_array[i*n + j]) != 1)
@@ -70,7 +70,7 @@ int main(int argc, char *argv[]) {
     fclose(filtered_image_file);
 
     cudaFree(filtered_image_array);
-    free(noise_image_array);
+    cudaFree(noise_image_array);
 
     return 0;
 }

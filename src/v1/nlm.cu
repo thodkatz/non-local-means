@@ -3,7 +3,7 @@
 #include <time.h>
 #include <string.h>
 #include "v1.h"
-#include "utils.h"
+#include "utils.cuh"
 
 /*
  * For the pixels in the edges, patch  size extends image.
@@ -12,7 +12,6 @@
  * TODO: how to make use of missing values in "special" patches? Wrap the image?
  */
 #define OUT_OF_BOUNDS -1.0
-
 
 // expecting only even number of patch size
 void non_local_means(float *filtered_image, int m, int n, float *noise_image, int patch_size, float filt_sigma, float patch_sigma, int argc, char *argv[]) {
@@ -24,7 +23,8 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     printf("\nCreating patches...\n");
     TIC()
     float *patches;
-    patches = create_patches(noise_image, patch_size, m, n);
+	cudaMallocManaged(&patches, m*n*total_patch_size * sizeof(float));
+    create_patches(patches, noise_image, patch_size, m, n);
     TOC("Time elapsed creating patches: %lf\n")
 
     float *gauss_patch;
@@ -43,13 +43,14 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     }
     TOC("Time elapsed applying guassian patch: %lf\n");
 
-    //int blockSize, gridSize;
-    //cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, m*n);
+    int blockSize, gridSize;
+    cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, m*n);
+	printf("Best grid size: %d\nBest block size: %d\n", gridSize, blockSize);
 
     printf("Filtering...\n");
-    //filtering<<<gridSize, blockSize>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
+    filtering<<<total_pixels/256, 256>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
-    //cudaDeviceSynchronize();
+    cudaDeviceSynchronize();
 
     // debugging
     
@@ -69,7 +70,7 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
         fclose(debug_filtering);
     }
 
-    free(patches);
+    cudaFree(patches);
     free(gauss_patch);
 }
 

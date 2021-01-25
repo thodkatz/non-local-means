@@ -5,4 +5,5 @@
 #SBATCH --time=1:00
 #SBATCH --output=./hpc/%j
 
-./bin/v1
+make v1
+nvprof ./bin/v1 --debug
