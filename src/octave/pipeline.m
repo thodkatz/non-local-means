@@ -13,7 +13,7 @@ close all
 pkg load image statistics
 
 path = './data/';
-strImgVar = 'house';
+strImgVar = 'lena512';
 args = argv();
 
 normImg = @(I) (I - min(I(:))) ./ max(I(:) - min(I(:)));
@@ -21,19 +21,26 @@ normImg = @(I) (I - min(I(:))) ./ max(I(:) - min(I(:)));
 % REQUIREMENT:
 % THE INPUT OF AN IMAGE SHOULD BE REPRESENTED IN A 2D ARRAY (GRAYSCALE)
 fprintf('Loading input data...\n')
+% WAYS TO READ AN IMAGE:
 ioImg = load([path strImgVar '.mat']);
 I = ioImg.(strImgVar);
+
 %I = dlmread([path 'house.txt']); 
+
+I = imread([path 'lena256.jpg']);
+I = double(I);
+%I = reshape(I, [length(I) length(I)])
 
 % NORMALIZING
 fprintf("Normalizing image (0 - 1)...\n");
 I = normImg(I);
+dlmwrite([path 'normalized.txt'], I);
 
 % APPLY NOISE
 fprintf("Applying noise...\n");
-%J = imnoise(I, 'gaussian', 0, 0.001);
-%dlmwrite([path 'noise_image_matlab.txt'], J, '-append', 'delimiter', ' ', 'precision', '%.06f');
-J = dlmread([path 'noise_image_matlab.txt']);
+J = imnoise(I, 'gaussian', 0, 0.001);
+dlmwrite([path 'noise_image_house_const.txt'], J, 'delimiter', ' ', 'precision', '%.06f');
+J = dlmread([path 'noise_image_house_const.txt']);
 
 fprintf("Input ready to be parsed from our C code\n");
 dlmwrite([path 'noise_image.txt'], size(J), 'delimiter', ' ');
@@ -52,7 +59,7 @@ if length(args) == 2
 end
 % AS A NON NVIDIA USER I CANT USE THIS SCRIPT LOCALLY FOR CUDA VERSIONS
 %system(exe); 
-system("./bin/v0");
+system(["./bin/v0" ' ' Flag]);
 If = dlmread([path 'filtered_image.txt']);
 fprintf("\033[1mC CODE ENDED...\033[0m\n\n");
 

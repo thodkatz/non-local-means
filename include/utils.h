@@ -71,6 +71,10 @@ float *create_gauss_kernel(int patch_size, float patch_sigma);
 
 float *euclidean_distance_matrix(float *patches, int patch_size, int rows, int cols);
 
+float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int rows, int cols);
+
+float *euclidean_distance_matrix_per_pixel(float *patches, int patch_size, int pixel, int cols);
+
 float euclidean_distance_patch(float *patch1, float *patch2, int patch_size);
 
 float apply_weighted_pixels(float *weights, float *image, int image_size);

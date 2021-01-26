@@ -18,12 +18,13 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     struct timespec tic;
     struct timespec toc;
     int total_patch_size = patch_size * patch_size;
+    int total_pixels = m * n;
 
     printf("\nCreating patches...\n");
-    TIC();
+    TIC()
     float *patches;
     patches = create_patches(noise_image, patch_size, m, n);
-    TOC("Time elapsed creating patches: %lf\n");
+    TOC("Time elapsed creating patches: %lf\n")
 
     float *gauss_patch;
     gauss_patch = create_gauss_kernel(patch_size, patch_sigma);
@@ -31,60 +32,23 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     // apply gaussian patch
    
     printf("\nApplying gaussian patch...\n");
-    TIC();
-    for(int i = 0; i < m * n; i ++) {
+    TIC()
+    for(int i = 0; i < total_pixels; i ++) {
         for(int k = 0; k < total_patch_size; k++) {
             if(patches[i*total_patch_size + k] != OUT_OF_BOUNDS) {
                 patches[i*total_patch_size + k] *= gauss_patch[k];
             }
         }
     }
-    TOC("Time elapsed applying guassian patch: %lf\n");
+    TOC("Time elapsed applying guassian patch: %lf\n")
 
-
-    // calculate distances
-    
-    float *sum_weights;
-    CALLOC(float, sum_weights, m*n);
-    float *weights;
-    printf("\nCalculating distance matrix symmetric...\n");
-    TIC();
-    weights = euclidean_distance_symmetric_matrix(patches, patch_size, m*n, m*n);
-    TOC("Time elapsed calculating distance matrix: %lf\n");
-
-    // weight formula per patch: D = exp(-D.^2 / filt_sigma)
-    
-    printf("\nCalculating weights...\n");
-    TIC();
-    for(int i = 0; i < m*n; i++){
-        float max  = -1.0; 
-        for(int j = 0; j < m*n; j++) {
-            weights[i*(m*n) + j] = exp(-pow(weights[i*(m*n) + j], 2) / filt_sigma);
-            if(weights[i*(m*n) + j] > max && j!=i) max = weights[i*(m*n) + j];
-            if(j!=i) sum_weights[i] += weights[i*(m*n) + j];
-        }
-        // normalize the self distance (weigth 1.0) with the maximum value of the compared patches per patch
-        weights[i*(m*n) + i] = max; 
-        sum_weights[i] += max;
-    }
-    TOC("Time elapsed calculating weights: %lf\n");
-
-    // filtering
-    
     float *filtered_image;
-    MALLOC(float, filtered_image, m * n);
-
-    TIC();
-    printf("\nFiltering...\n");
-    for(int i = 0; i < m; i++) {
-        for(int j = 0; j < n; j++) {
-            filtered_image[i*n + j] = apply_weighted_pixels(weights + i*(m*n)*n + j*(m*n), noise_image, m*n);
-            filtered_image[i*n + j] /= sum_weights[i*n + j];
-        }
-    }
-    TOC("Time elapsed filtering image: %lf\n");
+    MALLOC(float, filtered_image, total_pixels);
+    printf("Filtering...\n");
+    filtering(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
     // debugging
+    
     FILE *debug_patches;
     if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
         printf("Writing patches to file. Mode: \033[1mdebug\033[0m...\n");
@@ -103,24 +67,33 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
 
     free(patches);
     free(gauss_patch);
-    free(weights);
-    free(sum_weights);
 
     return filtered_image;
 }
 
-float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int rows, int cols) {
-    int total_patch_size = patch_size * patch_size;
 
-    float *distance;
-    MALLOC(float, distance, rows * cols);
+void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
+    for(int pixel = 0; pixel < total_pixels; pixel++) {
+        printf("Pixelth: %d of %d\n", pixel, total_pixels);
 
-    for(int i = 0; i < rows; i++) {
-        for(int j = i; j < cols; j++) {
-            distance[i*cols + j] = euclidean_distance_patch(patches + i*total_patch_size, patches + j*total_patch_size, patch_size);
-            distance[j*cols + i] = distance[i*cols + j];
+        float *weights;
+        MALLOC(float, weights, total_pixels);
+        weights = euclidean_distance_matrix_per_pixel(patches, patch_size, pixel, total_pixels);
+
+        float max = -1.0;
+        float sum_weights = 0;
+        for(int k = 0; k<total_pixels; k++) {
+            weights[k] = exp(-pow(weights[k], 2) / filt_sigma);
+            if(weights[k] > max && pixel!=k) max = weights[k];
+            if(pixel!=k) sum_weights += weights[k];
         }
-    }
 
-    return distance;
+        weights[pixel] = max;
+        sum_weights += max;
+
+        filtered_image[pixel] = apply_weighted_pixels(weights, noise_image, total_pixels);
+        filtered_image[pixel] /= sum_weights;
+
+        free(weights);
+    }
 }

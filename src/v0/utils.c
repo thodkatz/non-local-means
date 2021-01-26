@@ -190,6 +190,36 @@ float *euclidean_distance_matrix(float *patches, int patch_size, int rows, int c
     return distance;
 }
 
+float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int rows, int cols) {
+    int total_patch_size = patch_size * patch_size;
+
+    float *distance;
+    MALLOC(float, distance, rows * cols);
+
+    for(int i = 0; i < rows; i++) {
+        for(int j = i; j < cols; j++) {
+            distance[i*cols + j] = euclidean_distance_patch(patches + i*total_patch_size, patches + j*total_patch_size, patch_size);
+            distance[j*cols + i] = distance[i*cols + j];
+        }
+    }
+
+    return distance;
+}
+
+// nearness is determined by how similar is the intensity of the pixels
+float *euclidean_distance_matrix_per_pixel(float *patches, int patch_size, int pixel, int cols) {
+    int total_patch_size = patch_size * patch_size;
+
+    float *distance;
+    MALLOC(float, distance, cols);
+
+    for(int j = 0; j < cols; j++) {
+        distance[j] = euclidean_distance_patch(patches + pixel*total_patch_size, patches + j*total_patch_size, patch_size);
+    }
+
+    return distance;
+}
+
 // take two patches and calculate their distance
 float euclidean_distance_patch(float *patch1, float *patch2, int patch_size) {
     int total_patch_size = patch_size * patch_size;
