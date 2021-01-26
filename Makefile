@@ -20,7 +20,10 @@ v0: $(SRC_v0)
 v1: $(SRC_v1)
 	nvcc $^ $(INC) -o $(BIN)/$@
 
-.PHONY: clean v0
+v2: $(SRC_v2)
+	nvcc $^ $(INC) -o $(BIN)/$@
+
+.PHONY: clean v0 v1 v2
 
 clean:
 	rm -f bin/*
