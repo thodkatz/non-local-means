@@ -11,7 +11,7 @@
 #define CALLOC(type, x, len) if((x = (type*)calloc(len, sizeof(type))) == NULL) \
                                 {printf("Bad alloc\n"); exit(1);}
 
-__global__ void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image);
+__global__ void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image,const int total_pixels, float *filtered_image);
 
 __device__ void euclidean_distance_matrix_per_pixel(float *weights, float *patches, int patch_size, int pixel, int cols);
 

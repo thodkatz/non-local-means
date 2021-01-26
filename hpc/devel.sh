@@ -6,4 +6,4 @@
 #SBATCH --output=./hpc/%j
 
 make v1
-nvprof ./bin/v1 --debug
+./bin/v1 --debug

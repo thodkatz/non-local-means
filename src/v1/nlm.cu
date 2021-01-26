@@ -18,7 +18,7 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     struct timespec tic;
     struct timespec toc;
     int total_patch_size = patch_size * patch_size;
-    int total_pixels = m * n;
+    const int total_pixels = m * n;
 
     printf("\nCreating patches...\n");
     TIC()
@@ -48,7 +48,7 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
 	printf("Best grid size: %d\nBest block size: %d\n", gridSize, blockSize);
 
     printf("Filtering...\n");
-    filtering<<<total_pixels/256, 256>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
+    filtering<<<gridSize, blockSize>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
     cudaDeviceSynchronize();
 
