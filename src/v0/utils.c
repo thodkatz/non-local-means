@@ -207,17 +207,12 @@ float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int r
 }
 
 // nearness is determined by how similar is the intensity of the pixels
-float *euclidean_distance_matrix_per_pixel(float *patches, int patch_size, int pixel, int cols) {
+void euclidean_distance_matrix_per_pixel(float *weights, float *patches, int patch_size, int pixel, int cols) {
     int total_patch_size = patch_size * patch_size;
 
-    float *distance;
-    MALLOC(float, distance, cols);
-
     for(int j = 0; j < cols; j++) {
-        distance[j] = euclidean_distance_patch(patches + pixel*total_patch_size, patches + j*total_patch_size, patch_size);
+        weights[j] = euclidean_distance_patch(patches + pixel*total_patch_size, patches + j*total_patch_size, patch_size);
     }
-
-    return distance;
 }
 
 // take two patches and calculate their distance

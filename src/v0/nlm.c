@@ -73,12 +73,13 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
 
 
 void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
+#define PIXELS 256 * 256
     for(int pixel = 0; pixel < total_pixels; pixel++) {
         printf("Pixelth: %d of %d\n", pixel, total_pixels);
 
         float *weights;
         MALLOC(float, weights, total_pixels);
-        weights = euclidean_distance_matrix_per_pixel(patches, patch_size, pixel, total_pixels);
+        euclidean_distance_matrix_per_pixel(weights, patches, patch_size, pixel, total_pixels);
 
         float max = -1.0;
         float sum_weights = 0;
