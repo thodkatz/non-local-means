@@ -50,7 +50,9 @@ exe = ["./bin/" args{1}];
 if length(args) == 2
     exe = ["./bin/" args{1} ' ' Flag];
 end
-system(exe);
+% AS A NON NVIDIA USER I CANT USE THIS SCRIPT LOCALLY FOR CUDA VERSIONS
+%system(exe); 
+system("./bin/v0");
 If = dlmread([path 'filtered_image.txt']);
 fprintf("\033[1mC CODE ENDED...\033[0m\n\n");
 
@@ -62,15 +64,14 @@ patchSigma = Params(3);
 % VALIDATION
 if Flag == '--debug'
     fprintf("Validation...\n");
-    fprintf("This will take a reasonable amount of time. Be patient :)\n");
-    cd src/octave/
+    %cd src/octave/
     % NON LOCAL MEANS IMPLEMENTED IN OCTAVE/MATLAB
-    IfOctave = nonLocalMeans(J, patchSize, filtSigma, patchSigma);
+    %IfOctave = nonLocalMeans(J, patchSize, filtSigma, patchSigma);
 
     % CHECK IF PATCHES ARE THE SAME
-    PatchesOctave = dlmread(['../../' path 'debug/patches_oct.txt']);
-    PatchesC      = dlmread(['../../' path 'debug/v0/patches_c.txt']);
-    ErrorPatches = abs(PatchesOctave - PatchesC);
+    Patches1      = dlmread([path 'debug/v1/patches_c.txt']);
+    Patches2      = dlmread([path 'debug/v0/patches_c.txt']);
+    ErrorPatches = abs(Patches1 - Patches2);
     ErrorPatches = max(ErrorPatches(:));
 
     if ErrorPatches < 0.001
@@ -78,44 +79,14 @@ if Flag == '--debug'
     elseif
         fprintf("\x1B[31m \xE2\x9D\x8C Patches \x1B[0m\n"); 
         fprintf("Patches error: %f\n", ErrorPatches);
-        %dlmwrite(['../../' path 'debug/errors/.txt'], PatchesOctave, 'delimiter', ' ', 'precision', '%.02f');
-        %dlmwrite(['../../' path 'debug/test2.txt'], PatchesC, 'delimiter', ' ', 'precision', '%.02f');
-    end
-
-    % CHECK DISTANCE MATRIX
-    DistancesOctave = dlmread(['../../' path 'debug/distances_oct.txt']);
-    DistancesC      = dlmread(['../../' path 'debug/v0/distances_c.txt']);
-    ErrorDistances = abs(DistancesOctave - DistancesC);
-    ErrorDistances = max(ErrorDistances(:));
-
-    if ErrorDistances < 0.001
-        fprintf("\x1B[32m \xE2\x9C\x94 Distances \x1B[0m\n"); 
-    elseif
-        fprintf("\x1B[31m \xE2\x9D\x8C Distances \x1B[0m\n");
-        fprintf("Distances error: %f\n", ErrorDistances);
-        %dlmwrite(['../../' path 'debug/test1.txt'], DistancesOctave, 'delimiter', ' ', 'precision', '%.02f');
-        %dlmwrite(['../../' path 'debug/test2.txt'], DistancesC, 'delimiter', ' ', 'precision', '%.02f');
-    end
-
-    % CHECK WEIGHTS
-    WeightsOctave = dlmread(['../../' path 'debug/weights_oct.txt']);
-    WeightsC      = dlmread(['../../' path 'debug/v0/weights_c.txt']);
-    ErrorWeights = abs(WeightsOctave - WeightsC);
-    ErrorWeights = max(ErrorWeights(:));
-
-    if ErrorWeights < 0.001
-        fprintf("\x1B[32m \xE2\x9C\x94 Weights \x1B[0m\n"); 
-    elseif
-        fprintf("\x1B[31m \xE2\x9D\x8C Weights \x1B[0m\n");
-        fprintf("Weights error: %f\n", ErrorWeights);
-        %dlmwrite(['../../' path 'debug/test1.txt'], WeightsOctave, 'delimiter', ' ', 'precision', '%.02f');
-        %dlmwrite(['../../' path 'debug/test2.txt'], WeightsC, 'delimiter', ' ', 'precision', '%.02f');
+        %dlmwrite(['../../' path 'debug/errors/.txt'], Patches1, 'delimiter', ' ', 'precision', '%.02f');
+        %dlmwrite(['../../' path 'debug/test2.txt'], Patches2, 'delimiter', ' ', 'precision', '%.02f');
     end
 
     % CHECK FILTERED IMAGE
-    FilteredOctave = dlmread(['../../' path 'debug/filtered_image_oct.txt']);
-    FilteredC      = dlmread(['../../' path 'debug/'  args{1} '/filtered_image_c.txt']);
-    ErrorFiltering = abs(FilteredOctave - FilteredC);
+    Filtered1      = dlmread([path 'debug/v1/filtered_image_c.txt']);
+    Filtered2      = dlmread([path 'debug/v0/filtered_image_c.txt']);
+    ErrorFiltering = abs(Filtered1 - Filtered2);
     ErrorFiltering = max(ErrorFiltering(:));
 
     if ErrorFiltering < 0.001
@@ -123,8 +94,8 @@ if Flag == '--debug'
     elseif
         fprintf("\x1B[31m \xE2\x9D\x8C Filtering \x1B[0m\n");
         fprintf("Filtering error: %f\n", ErrorFiltering);
-        %dlmwrite(['../../' path 'debug/test1.txt'], FilteredOctave, 'delimiter', ' ', 'precision', '%.02f');
-        %dlmwrite(['../../' path 'debug/test2.txt'], FilteredC, 'delimiter', ' ', 'precision', '%.02f');
+        %dlmwrite(['../../' path 'debug/test1.txt'], Filtered1, 'delimiter', ' ', 'precision', '%.02f');
+        %dlmwrite(['../../' path 'debug/test2.txt'], Filtered2, 'delimiter', ' ', 'precision', '%.02f');
     end
 end
 

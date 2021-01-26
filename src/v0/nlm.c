@@ -20,10 +20,10 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     int total_patch_size = patch_size * patch_size;
 
     printf("\nCreating patches...\n");
-    TIC()
+    TIC();
     float *patches;
     patches = create_patches(noise_image, patch_size, m, n);
-    TOC("Time elapsed creating patches: %lf\n")
+    TOC("Time elapsed creating patches: %lf\n");
 
     float *gauss_patch;
     gauss_patch = create_gauss_kernel(patch_size, patch_sigma);
@@ -31,7 +31,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     // apply gaussian patch
    
     printf("\nApplying gaussian patch...\n");
-    TIC()
+    TIC();
     for(int i = 0; i < m * n; i ++) {
         for(int k = 0; k < total_patch_size; k++) {
             if(patches[i*total_patch_size + k] != OUT_OF_BOUNDS) {
@@ -39,38 +39,23 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
             }
         }
     }
-    TOC("Time elapsed applying guassian patch: %lf\n")
+    TOC("Time elapsed applying guassian patch: %lf\n");
 
-    FILE *debug_patches;
-    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
-        printf("Writing patches to file. Mode: \033[1mdebug\033[0m...\n");
-        debug_patches = fopen("data/debug/v0/patches_c.txt", "w");
-        print_patch_file(debug_patches, patches, patch_size, m*n);
-        fclose(debug_patches);
-    }
 
     // calculate distances
     
     float *sum_weights;
     CALLOC(float, sum_weights, m*n);
     float *weights;
-    printf("\nCalculating distance matrix...\n");
-    TIC()
+    printf("\nCalculating distance matrix symmetric...\n");
+    TIC();
     weights = euclidean_distance_symmetric_matrix(patches, patch_size, m*n, m*n);
-    TOC("Time elapsed calculating distance matrix: %lf\n")
-
-    FILE *debug_distances;
-    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
-        printf("Writing distances to file. Mode: \033[1mdebug\033[0m...\n");
-        debug_distances = fopen("data/debug/v0/distances_c.txt", "w");
-        print_array_file(debug_patches, weights, m*n, m*n);
-        fclose(debug_distances);
-    }
+    TOC("Time elapsed calculating distance matrix: %lf\n");
 
     // weight formula per patch: D = exp(-D.^2 / filt_sigma)
     
     printf("\nCalculating weights...\n");
-    TIC()
+    TIC();
     for(int i = 0; i < m*n; i++){
         float max  = -1.0; 
         for(int j = 0; j < m*n; j++) {
@@ -82,21 +67,14 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
         weights[i*(m*n) + i] = max; 
         sum_weights[i] += max;
     }
-    TOC("Time elapsed calculating weights: %lf\n")
+    TOC("Time elapsed calculating weights: %lf\n");
 
-    FILE *debug_weights;
-    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
-        printf("Writing weights to file. Mode: \033[1mdebug\033[0m...\n");
-        debug_weights = fopen("data/debug/v0/weights_c.txt", "w");
-        print_array_file(debug_weights, weights, m*n, m*n);
-        fclose(debug_weights);
-    }
     // filtering
     
     float *filtered_image;
     MALLOC(float, filtered_image, m * n);
 
-    TIC()
+    TIC();
     printf("\nFiltering...\n");
     for(int i = 0; i < m; i++) {
         for(int j = 0; j < n; j++) {
@@ -104,7 +82,16 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
             filtered_image[i*n + j] /= sum_weights[i*n + j];
         }
     }
-    TOC("Time elapsed filtering image: %lf\n")
+    TOC("Time elapsed filtering image: %lf\n");
+
+    // debugging
+    FILE *debug_patches;
+    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
+        printf("Writing patches to file. Mode: \033[1mdebug\033[0m...\n");
+        debug_patches = fopen("data/debug/v0/patches_c.txt", "w");
+        print_patch_file(debug_patches, patches, patch_size, m*n);
+        fclose(debug_patches);
+    }
 
     FILE *debug_filtering;
     if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
