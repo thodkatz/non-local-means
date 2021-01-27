@@ -22,25 +22,27 @@ normImg = @(I) (I - min(I(:))) ./ max(I(:) - min(I(:)));
 % THE INPUT OF AN IMAGE SHOULD BE REPRESENTED IN A 2D ARRAY (GRAYSCALE)
 fprintf('Loading input data...\n')
 % WAYS TO READ AN IMAGE:
-ioImg = load([path strImgVar '.mat']);
-I = ioImg.(strImgVar);
+%ioImg = load([path strImgVar '.mat']);
+%I = ioImg.(strImgVar);
 
 %I = dlmread([path 'house.txt']); 
 
-I = imread([path 'lena256.jpg']);
+I = imread([path 'tulips128.jpg']);
+%I = rgb2gray(I);
+%I = imresize(I, [128 128]);
+%imwrite(I, [path 'tulips128.jpg']);
 I = double(I);
 %I = reshape(I, [length(I) length(I)])
 
 % NORMALIZING
 fprintf("Normalizing image (0 - 1)...\n");
 I = normImg(I);
-dlmwrite([path 'normalized.txt'], I);
 
 % APPLY NOISE
 fprintf("Applying noise...\n");
-J = imnoise(I, 'gaussian', 0, 0.001);
-dlmwrite([path 'noise_image_house_const.txt'], J, 'delimiter', ' ', 'precision', '%.06f');
-J = dlmread([path 'noise_image_house_const.txt']);
+%J = imnoise(I, 'gaussian', 0, 0.002);
+%dlmwrite([path 'noise_image_house_const.txt'], J, 'delimiter', ' ', 'precision', '%.06f');
+J = dlmread([path 'noise_image_tulips_const.txt']);
 
 fprintf("Input ready to be parsed from our C code\n");
 dlmwrite([path 'noise_image.txt'], size(J), 'delimiter', ' ');

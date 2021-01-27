@@ -35,9 +35,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     TIC()
     for(int i = 0; i < total_pixels; i ++) {
         for(int k = 0; k < total_patch_size; k++) {
-            if(patches[i*total_patch_size + k] != OUT_OF_BOUNDS) {
-                patches[i*total_patch_size + k] *= gauss_patch[k];
-            }
+            patches[i*total_patch_size + k] *= gauss_patch[k];
         }
     }
     TOC("Time elapsed applying guassian patch: %lf\n")
@@ -75,7 +73,6 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
 void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
 #define PIXELS 256 * 256
     for(int pixel = 0; pixel < total_pixels; pixel++) {
-        printf("Pixelth: %d of %d\n", pixel, total_pixels);
 
         float *weights;
         MALLOC(float, weights, total_pixels);

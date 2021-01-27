@@ -36,9 +36,7 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     TIC()
     for(int i = 0; i < total_pixels; i ++) {
         for(int k = 0; k < total_patch_size; k++) {
-            if(patches[i*total_patch_size + k] != OUT_OF_BOUNDS) {
-                patches[i*total_patch_size + k] *= gauss_patch[k];
-            }
+            patches[i*total_patch_size + k] *= gauss_patch[k];
         }
     }
     TOC("Time elapsed applying guassian patch: %lf\n");

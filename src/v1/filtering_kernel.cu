@@ -1,18 +1,20 @@
 #include "utils.cuh"
 
 // This macro is used for static memory allocation
-#define PIXELS 64 * 64
+#define PIXELS 256 * 256
 
 __global__ void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, const int total_pixels, float *filtered_image) {
 
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;
 
+    float weights[PIXELS];
+    // float weights[]; 
+    // For dynamic memory you need to allocate heap size before kernel invocation!
+    // float *weights = (float*)malloc(total_pixels * sizeof(float));
+
     // grid stride loop
     for(int pixel = tid; tid < total_pixels; tid+=stride) {
-        float weights[PIXELS];
-        // For dynamic memory you need to allocate heap size before kernel invocation!!
-        // float *weights = (float*)malloc(total_pixels * sizeof(float));
 
         euclidean_distance_matrix_per_pixel(weights, patches, patch_size, pixel, total_pixels);
 
@@ -20,6 +22,7 @@ __global__ void filtering(float *patches, int patch_size, float filt_sigma, floa
         float sum_weights = 0;
         for(int k = 0; k<total_pixels; k++) {
                 weights[k] = exp(-pow(weights[k], 2) / filt_sigma);
+                // TODO Remove if conditions to avoid warp divergence
                 if(weights[k] > max && pixel!=k) max = weights[k];          
                 if(pixel!=k) sum_weights += weights[k];
         }

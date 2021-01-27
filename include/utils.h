@@ -73,7 +73,7 @@ float *euclidean_distance_matrix(float *patches, int patch_size, int rows, int c
 
 float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int rows, int cols);
 
-float *euclidean_distance_matrix_per_pixel(float *patches, int patch_size, int pixel, int cols);
+void euclidean_distance_matrix_per_pixel(float *weights, float *patches, int patch_size, int pixel, int cols);
 
 float euclidean_distance_patch(float *patch1, float *patch2, int patch_size);
 

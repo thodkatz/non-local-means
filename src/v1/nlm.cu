@@ -21,11 +21,11 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     const int total_pixels = m * n;
 
     printf("\nCreating patches...\n");
-    TIC()
+    TIC();
     float *patches;
-	cudaMallocManaged(&patches, m*n*total_patch_size * sizeof(float));
+    cudaMallocManaged(&patches, m*n*total_patch_size * sizeof(float));
     create_patches(patches, noise_image, patch_size, m, n);
-    TOC("Time elapsed creating patches: %lf\n")
+    TOC("Time elapsed creating patches: %lf\n");
 
     float *gauss_patch;
     gauss_patch = create_gauss_kernel(patch_size, patch_sigma);
@@ -33,19 +33,32 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     // apply gaussian patch
    
     printf("\nApplying gaussian patch...\n");
-    TIC()
+    TIC();
     for(int i = 0; i < total_pixels; i ++) {
         for(int k = 0; k < total_patch_size; k++) {
-            if(patches[i*total_patch_size + k] != OUT_OF_BOUNDS) {
-                patches[i*total_patch_size + k] *= gauss_patch[k];
-            }
+            patches[i*total_patch_size + k] *= gauss_patch[k];
         }
     }
     TOC("Time elapsed applying guassian patch: %lf\n");
 
     int blockSize, gridSize;
     cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, m*n);
-	printf("Best grid size: %d\nBest block size: %d\n", gridSize, blockSize);
+    printf("Best grid size: %d\nBest block size: %d\n", gridSize, blockSize);
+    // for some reason calculating block and gridsize with occupancy calculator will 
+    // not fill the filtered image. Should check if the grid stride loop is working as intended
+    // or why is happening when I am requesting less total threads than my pixels
+    // For the other two ways, where the totla number of threads requested was higher than pixels
+    // we got correct results. Is a memory issue?
+
+    blockSize = 256;
+    gridSize = (total_pixels + blockSize - 1)/blockSize;
+    printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);    
+
+    // source: https://developer.nvidia.com/blog/cuda-pro-tip-write-flexible-kernels-grid-stride-loops/
+    int numSMs, device;
+    cudaGetDevice(&device);
+    cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, device);
+    //gridSize = 32*numSMs;
 
     printf("Filtering...\n");
     filtering<<<gridSize, blockSize>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
