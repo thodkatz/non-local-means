@@ -1,48 +1,40 @@
 #include "utils.cuh"
 
-// This macro is used for static memory allocation
-#define PIXELS 256 * 256
-
 __global__ void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, const int total_pixels, float *filtered_image) {
 
     int tid = threadIdx.x + blockIdx.x * blockDim.x;
     int stride = blockDim.x * gridDim.x;
 
-    float weights[PIXELS];
-    // float weights[]; 
-    // For dynamic memory you need to allocate heap size before kernel invocation!
-    // float *weights = (float*)malloc(total_pixels * sizeof(float));
-
+    int total_patch_size = patch_size * patch_size;
     // grid stride loop
     for(int pixel = tid; tid < total_pixels; tid+=stride) {
 
-        euclidean_distance_matrix_per_pixel(weights, patches, patch_size, pixel, total_pixels);
-
+        float weight = 0;
+        float filtered_value = 0;
         float max = -1.0;
         float sum_weights = 0;
-        for(int k = 0; k<total_pixels; k++) {
-                weights[k] = exp(-pow(weights[k], 2) / filt_sigma);
-                // TODO Remove if conditions to avoid warp divergence
-                if(weights[k] > max && pixel!=k) max = weights[k];          
-                if(pixel!=k) sum_weights += weights[k];
+
+        for(int i = 0; i < total_pixels; i++) {
+            weight = euclidean_distance_patch(patches + pixel*total_patch_size, patches + i*total_patch_size, patch_size);
+            weight = exp(-pow(weight, 2) / filt_sigma);
+
+            max = (weight > max && i!=pixel) ? weight : max;
+            sum_weights += weight;
+
+            filtered_value += weight * noise_image[i];
         }
 
-        weights[pixel] = max;
+        // neglect the weight of self distance 
+        sum_weights -= 1;
         sum_weights += max;
 
-        filtered_image[pixel] = apply_weighted_pixels(weights, noise_image, total_pixels);
-        filtered_image[pixel] /= sum_weights;
+        float noise_pixel = *(patch_size + pixel*total_patch_size + total_patch_size/2);
+        filtered_value -= noise_pixel;
+        filtered_value += max*noise_pixel;
+        filtered_value /= sum_weights;
+
+        filtered_image[pixel] = filtered_value;
     }
-}
-
-// nearness is determined by how similar is the intensity of the pixels
-__device__ void euclidean_distance_matrix_per_pixel(float *weights, float *patches, int patch_size, int pixel, int cols) {
-    int total_patch_size = patch_size * patch_size;
-
-    for(int j = 0; j < cols; j++) {
-        weights[j] = euclidean_distance_patch(patches + pixel*total_patch_size, patches + j*total_patch_size, patch_size);
-    }
-
 }
 
 // take two patches and calculate their distance
@@ -55,14 +47,4 @@ __device__ float euclidean_distance_patch(float *patch1, float *patch2, int patc
     }
     
     return sqrt(distance);
-}
-
-__device__ float apply_weighted_pixels(float *weights, float *image, int image_size) {
-    float new_pixel = 0;
-
-    for(int i = 0; i < image_size; i++) {
-        new_pixel += weights[i] * image[i];
-    }
-
-    return new_pixel;
 }
