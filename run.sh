@@ -18,8 +18,8 @@ elif [ $# == 3 ]; then
 fi
 
 echo -e "\n\033[1mCompiling...\033[0m"
-#make $1
-make v0
+make $1
+#make v0
 
 echo -e "\n\033[1mOctave...\033[0m"
 octave src/octave/pipeline.m $1 $2

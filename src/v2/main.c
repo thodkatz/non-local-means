@@ -3,16 +3,16 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
-#include "v1.h"
-#include "utils.cuh"
+#include "utils.h"
+#include "v0.h"
 
 int main(int argc, char *argv[]) {
 
-    printf(CYN "VERSION 1\n" RESET);
+    printf(CYN "VERSION 2\n" RESET);
 
     if(argc == 2 && strcmp(argv[1], "--debug") != 0) {
         printf("Bad arguments. If --debug option desired then:\n");
-        printf("USAGE ./bin/v1 --debug\n");
+        printf("USAGE ./bin/v2 --debug\n");
         exit(-1);
     }
 
@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
     printf("Reading image...\n");
     float *noise_image_array;
-	cudaMallocManaged(&noise_image_array, m * n * sizeof(float));
+    MALLOC(float, noise_image_array, m * n); // row major
     for(int i = 0; i< m; i++) {
         for(int j = 0; j < n; j++) {
             if(fscanf(noise_image_file, "%f", &noise_image_array[i*n + j]) != 1)
@@ -52,9 +52,8 @@ int main(int argc, char *argv[]) {
 
     printf("Non-local means filtering...\n");
     float *filtered_image_array;
-    cudaMallocManaged(&filtered_image_array, m * n * sizeof(float));
     TIC()
-    non_local_means(filtered_image_array, m, n, noise_image_array, patch_size, filt_sigma, patch_sigma, argc, argv);
+    filtered_image_array = non_local_means(m, n, noise_image_array, patch_size, filt_sigma, patch_sigma, argc, argv);
     TOC("\nTotal time elapsed filtering image: %lf\n")
 
     // passing parameters and output to octave
@@ -65,12 +64,12 @@ int main(int argc, char *argv[]) {
 
     printf("\nWriting output data to file...\n");
     FILE *filtered_image_file;
-    filtered_image_file = fopen("data/filtered_image_v1.txt", "w");
+    filtered_image_file = fopen("data/filtered_image.txt", "w");
     print_array_file(filtered_image_file, filtered_image_array, m, n);
     fclose(filtered_image_file);
 
-    cudaFree(filtered_image_array);
-    cudaFree(noise_image_array);
+    free(filtered_image_array);
+    free(noise_image_array);
 
     return 0;
 }
