@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     }
 
     FILE *noise_image_file;
-    if((noise_image_file = fopen("data/noise_image.txt", "r")) == NULL) { 
+    if((noise_image_file = fopen("data/noise_image_lena_const.txt", "r")) == NULL) { 
         printf("Can't open file\n");
         exit(-1);  
     }

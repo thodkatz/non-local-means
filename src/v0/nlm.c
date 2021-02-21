@@ -72,6 +72,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
 
 void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
     for(int pixel = 0; pixel < total_pixels; pixel++) {
+        printf("Pixel: %d\n", pixel);
 
         float *weights;
         MALLOC(float, weights, total_pixels);

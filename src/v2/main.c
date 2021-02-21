@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     //print_array(noise_image_array, m, n);
 
     float filt_sigma = 0.02;
-    int patch_size = 5; // one dimension of a 2d square patch
+    int patch_size = 7; // one dimension of a 2d square patch
     float patch_sigma = 5.0/3.0; // patch sigma is for the gaussian weight applied per patch. It is the standard deviation of the gaussian applied.
     assert(patch_size%2==1);
 

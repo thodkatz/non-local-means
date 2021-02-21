@@ -62,7 +62,7 @@ end
 % AS A NON NVIDIA USER I CANT USE THIS SCRIPT LOCALLY FOR CUDA VERSIONS
 % SO I LAUNCH ONLY THE CPU 
 %system(exe); 
-system(["./bin/v0" ' ' DebugFlag]);
+system(["./bin/v2" ' ' DebugFlag]);
 If = dlmread([path 'filtered_image.txt']);
 fprintf("\033[1mC CODE ENDED...\033[0m\n\n");
 
