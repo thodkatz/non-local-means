@@ -1,0 +1,21 @@
+nvcc -Xptxas -O3 -use_fast_math src/v2/utils.cu src/v2/filtering_kernel.cu src/v2/nlm.cu src/v2/main.cu -I include -o bin/v2
+ptxas error   : Entry function '_Z9filteringPfifS_iS_' uses too much shared data (0x18800 bytes, 0xc000 max)
+make: *** [v2] Error 255
+[36mVERSION 2
+[0mReading image...
+Non-local means filtering...
+
+Creating patches...
+Time elapsed creating patches: 0.014684
+
+Applying gaussian patch...
+Time elapsed applying guassian patch: 0.009538
+Best grid size: 112
+Best block size: 1024
+Launched blocks of size 512. Occupancy: 1.000000
+Filtering...
+Current blockSize: 512 and gridSize: 224
+
+Total time elapsed filtering image: 0.125136
+
+Writing output data to file...

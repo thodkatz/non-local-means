@@ -4,7 +4,7 @@
 #include <time.h>
 #include <math.h>
 #include <string.h>
-#include "utils.h"
+#include "utils.cuh"
 
 double diff_time (struct timespec start, struct timespec end) {
     uint32_t diff_sec = (end.tv_sec - start.tv_sec);
@@ -33,7 +33,7 @@ void print_array_file(FILE *f, float *array, int row, int col) {
             if(j!=col-1) fprintf(f, "%0.5f ", array[i*col + j]);
             else         fprintf(f, "%0.5f", array[i*col + j]);
         } 
-        fprintf(f, "\n");
+        if(i!=row-1) fprintf(f, "\n");
     }
 }
 
@@ -74,12 +74,8 @@ void print_patch_file(FILE *f, float *patches, int patch_size, int pixels) {
  * TODO: how to make use of missing values in "special" patches? Wrap the image?
  */
 #define OUT_OF_BOUNDS -1.0
-float *create_patches(float *image, int patch_size, int m, int n) {
+void create_patches(float *patches, float *image, int patch_size, int m, int n) {
     int total_patch_size = patch_size * patch_size;
-
-    float *patches;
-    MALLOC(float, patches, m*n*total_patch_size);
-    for(int i = 0; i < m*n*total_patch_size; i++) patches[i] = OUT_OF_BOUNDS;
 
     // padding noise image symmetric
     float *image_padded;
@@ -103,8 +99,6 @@ float *create_patches(float *image, int patch_size, int m, int n) {
     }
 
     free(image_padded);
-
-    return patches;
 }
 
 /*
@@ -172,67 +166,4 @@ float *create_gauss_kernel(int patch_size, float patch_sigma) {
     }
 
     return gauss_patch;
-}
-
-// nearness is determined by how similar is the intensity of the pixels
-float *euclidean_distance_matrix(float *patches, int patch_size, int rows, int cols) {
-    int total_patch_size = patch_size * patch_size;
-
-    float *distance;
-    MALLOC(float, distance, rows * cols);
-
-    for(int i = 0; i < rows; i++) {
-        for(int j = 0; j < cols; j++) {
-            distance[i*cols + j] = euclidean_distance_patch(patches + i*total_patch_size, patches + j*total_patch_size, patch_size);
-        }
-    }
-
-    return distance;
-}
-
-float *euclidean_distance_symmetric_matrix(float *patches, int patch_size, int rows, int cols) {
-    int total_patch_size = patch_size * patch_size;
-
-    float *distance;
-    MALLOC(float, distance, rows * cols);
-
-    for(int i = 0; i < rows; i++) {
-        for(int j = i; j < cols; j++) {
-            distance[i*cols + j] = euclidean_distance_patch(patches + i*total_patch_size, patches + j*total_patch_size, patch_size);
-            distance[j*cols + i] = distance[i*cols + j];
-        }
-    }
-
-    return distance;
-}
-
-// nearness is determined by how similar is the intensity of the pixels
-void euclidean_distance_matrix_per_pixel(float *weights, float *patches, int patch_size, int pixel, int total_pixels) {
-    int total_patch_size = patch_size * patch_size;
-
-    for(int i = 0; i < total_pixels; i++) {
-        weights[i] = euclidean_distance_patch(patches + pixel*total_patch_size, patches + i*total_patch_size, patch_size);
-    }
-}
-
-// take two patches and calculate their distance
-float euclidean_distance_patch(float *patch1, float *patch2, int patch_size) {
-    int total_patch_size = patch_size * patch_size;
-
-    float distance = 0;
-    for(int i = 0; i < total_patch_size; i++) {
-            distance += pow(patch1[i] - patch2[i], 2); 
-    }
-
-    return sqrt(distance);
-}
-
-float apply_weighted_pixels(float *weights, float *image, int total_pixels) {
-    float new_pixel = 0;
-
-    for(int i = 0; i < total_pixels; i++) {
-        new_pixel += weights[i] * image[i];
-    }
-
-    return new_pixel;
 }

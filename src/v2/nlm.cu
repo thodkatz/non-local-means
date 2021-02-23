@@ -42,17 +42,11 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     TOC("Time elapsed applying guassian patch: %lf\n");
 
     int blockSize, gridSize;
-    cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, m*n);
+    cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, 64); // blockSize limit of 64 due to shared memory for patch size 7.
     printf("Best grid size: %d\nBest block size: %d\n", gridSize, blockSize);
-    // for some reason calculating block and gridsize with occupancy calculator will 
-    // not fill the filtered image. Should check if the grid stride loop is working as intended
-    // or why is happening when I am requesting less total threads than my pixels
-    // For the other two ways, where the totla number of threads requested was higher than pixels
-    // we got correct results. Is a memory issue?
 
     blockSize = 256;
-    gridSize = (total_pixels + blockSize - 1)/blockSize;
-    printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);    
+    gridSize = (total_pixels + blockSize - 1)/blockSize; // rounding up gridSize
 
     // source: https://developer.nvidia.com/blog/cuda-pro-tip-write-flexible-kernels-grid-stride-loops/
     int numSMs, device;
@@ -60,8 +54,20 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, device);
     //gridSize = 32*numSMs;
 
+    blockSize = 256/8; // optimization: instruction level parallelism
+
+    int maxActiveBlocks;
+    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks,filtering,blockSize,0);
+
+    cudaDeviceProp props;
+    cudaGetDeviceProperties(&props, device);
+    float occupancy = (maxActiveBlocks * blockSize / props.warpSize)/(float)(props.maxThreadsPerMultiProcessor/props.warpSize);
+    printf("Launched blocks of size %d. Occupancy: %f\n", blockSize, occupancy);
+
     printf("Filtering...\n");
-    blockSize /= 8; // optimization: instruction level parallelism
+    blockSize=32; // minimum 64 regarding the shared memory
+    gridSize=256;
+    printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);    
     filtering<<<gridSize, blockSize>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
     cudaDeviceSynchronize();

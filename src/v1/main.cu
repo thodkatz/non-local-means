@@ -43,14 +43,14 @@ int main(int argc, char *argv[]) {
     //print_array(noise_image_array, m, n);
 
     float filt_sigma = 0.02;
-    int patch_size = 5; // one dimension of a 2d square patch
+    int patch_size = 7; // one dimension of a 2d square patch
     float patch_sigma = 5.0/3.0; // patch sigma is for the gaussian weight applied per patch. It is the standard deviation of the gaussian applied.
     assert(patch_size%2==1);
     
     printf("Non-local means filtering...\n");
     float *filtered_image_array;
     cudaMallocManaged(&filtered_image_array, m * n * sizeof(float));
-    for(int i = 0; i<total_pixels;i++) filtered_image_array[i] = 0;
+    //for(int i = 0; i<total_pixels;i++) filtered_image_array[i] = 0; required for yet_another_filtering
     TIC()
     non_local_means(filtered_image_array, m, n, noise_image_array, patch_size, filt_sigma, patch_sigma, argc, argv);
     TOC("\nTotal time elapsed filtering image: %lf\n")

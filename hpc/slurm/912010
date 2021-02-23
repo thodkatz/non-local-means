@@ -1,0 +1,19 @@
+nvcc -Xptxas -O3 -use_fast_math src/v2/utils.cu src/v2/filtering_kernel.cu src/v2/nlm.cu src/v2/main.cu -I include -o bin/v2
+[36mVERSION 2
+[0mReading image...
+Non-local means filtering...
+
+Creating patches...
+Time elapsed creating patches: 0.015136
+
+Applying gaussian patch...
+Time elapsed applying guassian patch: 0.009735
+Best grid size: 112
+Best block size: 1024
+Launched blocks of size 1024. Occupancy: 1.000000
+Filtering...
+Current blockSize: 1024 and gridSize: 112
+
+Total time elapsed filtering image: 0.134863
+
+Writing output data to file...

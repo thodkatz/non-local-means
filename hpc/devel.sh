@@ -5,5 +5,5 @@
 #SBATCH --time=1:00
 #SBATCH --output=./hpc/slurm/%j
 
-make v1
-./bin/v1 --debug
+make $1
+./bin/$1
