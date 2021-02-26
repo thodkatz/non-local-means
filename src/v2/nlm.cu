@@ -44,11 +44,8 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     // trying to determine best size for blocks and threads
 
     int blockSize, gridSize;
-    cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, 64); // blockSize limit of 64 due to shared memory for patch size 7.
+    cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, 0);
     printf("Best grid size: %d\nBest block size: %d\n", gridSize, blockSize);
-
-    blockSize = 256;
-    gridSize = (total_pixels + blockSize - 1)/blockSize; // rounding up gridSize
 
     // source: https://developer.nvidia.com/blog/cuda-pro-tip-write-flexible-kernels-grid-stride-loops/
     int numSMs, device;
@@ -56,20 +53,25 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, device);
     //gridSize = 32*numSMs;
 
-    blockSize /= 8;
+    //blockSize = 256;
+    //gridSize = (total_pixels + blockSize - 1)/blockSize;
+
+    gridSize = atoi(argv[3]);
+    blockSize = atoi(argv[4]);
+    int dynamic_shared_size = 2*(total_patch_size * blockSize)*sizeof(float);
+
     printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);    
+    printf("Dynamic shared: %d\n", dynamic_shared_size);
 
     printf("Filtering...\n");
-    int dynamic_shared_size = 2*(total_patch_size * blockSize)*sizeof(float);
-    printf("Dynamic shared: %f\n", dynamic_shared_size);
     filtering<<<gridSize, blockSize, dynamic_shared_size>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
     cudaDeviceSynchronize();
 
     // debugging
-    
+
     FILE *debug_patches;
-    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
+    if(argc == 6 && strcmp(argv[5],"--debug") == 0) {
         printf("Writing patches to file. Mode: \033[1mdebug\033[0m...\n");
         debug_patches = fopen("data/debug/v1/patches_c.txt", "w");
         print_patch_file(debug_patches, patches, patch_size, m*n);
@@ -77,7 +79,7 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     }
 
     FILE *debug_filtering;
-    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
+    if(argc == 6 && strcmp(argv[5],"--debug") == 0) {
         printf("Writing filtering image to file. Mode: \033[1mdebug\033[0m...\n");
         debug_filtering = fopen("data/debug/v1/filtered_image_c.txt", "w");
         print_array_file(debug_filtering, filtered_image, m, n);

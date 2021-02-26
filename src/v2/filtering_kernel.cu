@@ -2,7 +2,7 @@
 
 // WARNING: BLOCK_SIZE and PATCH_SIZE should be mathed with variables patch_size and blockSize (launching kernel)
 // Macors used for static memory allocation for shared memory
-#define BLOCK_SIZE (64)
+#define BLOCK_SIZE (32)
 #define PATCH_SIZE (7*7)
 #define SIZE (BLOCK_SIZE*PATCH_SIZE)
 
@@ -14,16 +14,18 @@ __global__ void filtering(float *patches, int patch_size, float filt_sigma, floa
     int total_patch_size = patch_size * patch_size;
 
     extern __shared__ float s[];
+    float *patches_self = s;
+    float *patches_sub = (float*)&patches_self[blockDim.x * total_patch_size];
 
     // grid stride loop
     for(int pixel = tid; pixel < total_pixels; pixel+=stride) {
 
         // the patch that correspond to the pixel we want to filter that its patch will be compared with all the others
         //__shared__ float patches_self[SIZE];
-        float *patches_self = s;
         for(int i = 0; i < total_patch_size; i++) {
             patches_self[threadIdx.x*total_patch_size + i] = patches[pixel*total_patch_size + i];
         }
+        //__syncthreads();
 
         float weight = 0;
         float max = -1.0;
@@ -32,22 +34,21 @@ __global__ void filtering(float *patches, int patch_size, float filt_sigma, floa
         // making use of register memory
         float filtered_value = 0;
 
-        for(int i = 0; i < total_pixels/BLOCK_SIZE; i++) {
+        for(int i = 0; i < total_pixels/blockDim.x; i++) {
 
             // each thread per block copy a patch to shared memory
             //__shared__ float patches_sub[SIZE];
-            float *patches_sub = (float*)&s[blockDim.x * total_patch_size];
             for(int e = 0; e < total_patch_size; e++) {
-                patches_sub[threadIdx.x * total_patch_size + e] = patches[(threadIdx.x + i*BLOCK_SIZE) * total_patch_size + e];
+                patches_sub[threadIdx.x * total_patch_size + e] = patches[(threadIdx.x + i*blockDim.x) * total_patch_size + e];
             }
             __syncthreads();
 
             // each thread per block calculate the weights
-            for(int j = 0; j < BLOCK_SIZE; j++) {
+            for(int j = 0; j < blockDim.x; j++) {
             weight = euclidean_distance_patch(patches_self + (threadIdx.x)*total_patch_size, patches_sub + j*total_patch_size, patch_size);
             weight = exp(-(weight*weight) / filt_sigma);
 
-            max = (weight > max && (i*BLOCK_SIZE + j)!=pixel) ? weight : max;
+            max = (weight > max && (i*blockDim.x + j)!=pixel) ? weight : max;
             sum_weights += weight;
 
             float noise_pixel = *(patches_sub + j*total_patch_size + total_patch_size/2);
