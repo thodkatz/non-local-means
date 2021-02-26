@@ -6,4 +6,4 @@
 #SBATCH --output=./hpc/slurm/%j
 
 make $1
-./bin/$1
+./bin/$1 $2 $3 $4 $5 $6
