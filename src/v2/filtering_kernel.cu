@@ -1,8 +1,8 @@
 #include "utils.cuh"
 
 // WARNING: BLOCK_SIZE and PATCH_SIZE should be mathed with variables patch_size and blockSize (launching kernel)
-// Macors used for static memory allocation
-#define BLOCK_SIZE (32)
+// Macors used for static memory allocation for shared memory
+#define BLOCK_SIZE (64)
 #define PATCH_SIZE (7*7)
 #define SIZE (BLOCK_SIZE*PATCH_SIZE)
 
@@ -13,11 +13,14 @@ __global__ void filtering(float *patches, int patch_size, float filt_sigma, floa
 
     int total_patch_size = patch_size * patch_size;
 
+    extern __shared__ float s[];
+
     // grid stride loop
     for(int pixel = tid; pixel < total_pixels; pixel+=stride) {
 
         // the patch that correspond to the pixel we want to filter that its patch will be compared with all the others
-        __shared__ float patches_self[SIZE];
+        //__shared__ float patches_self[SIZE];
+        float *patches_self = s;
         for(int i = 0; i < total_patch_size; i++) {
             patches_self[threadIdx.x*total_patch_size + i] = patches[pixel*total_patch_size + i];
         }
@@ -32,7 +35,8 @@ __global__ void filtering(float *patches, int patch_size, float filt_sigma, floa
         for(int i = 0; i < total_pixels/BLOCK_SIZE; i++) {
 
             // each thread per block copy a patch to shared memory
-            __shared__ float patches_sub[SIZE];
+            //__shared__ float patches_sub[SIZE];
+            float *patches_sub = (float*)&s[blockDim.x * total_patch_size];
             for(int e = 0; e < total_patch_size; e++) {
                 patches_sub[threadIdx.x * total_patch_size + e] = patches[(threadIdx.x + i*BLOCK_SIZE) * total_patch_size + e];
             }

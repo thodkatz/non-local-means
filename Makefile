@@ -18,10 +18,10 @@ v0: $(SRC_v0)
 	$(CC) $(CFLAGS) $^ $(INC) -o $(BIN)/$@
 
 v1: $(SRC_v1)
-	nvcc -Xptxas -O3 -use_fast_math $^ $(INC) -o $(BIN)/$@
+	nvcc -arch=sm_60 -Xptxas=-v -O3 -use_fast_math $^ $(INC) -o $(BIN)/$@
 
 v2: $(SRC_v2)
-	nvcc -Xptxas -O3 -use_fast_math $^ $(INC) -o $(BIN)/$@
+	nvcc -arch=sm_60 -Xptxas=-v -O3 -use_fast_math $^ $(INC) -o $(BIN)/$@
 
 .PHONY: clean v0 v1 v2
 

@@ -43,12 +43,9 @@ int main(int argc, char *argv[]) {
     //print_array(noise_image_array, m, n);
 
     float filt_sigma = 0.02;
-    int patch_size = 5; // one dimension of a 2d square patch
+    int patch_size = 7; // one dimension of a 2d square patch
     float patch_sigma = 5.0/3.0; // patch sigma is for the gaussian weight applied per patch. It is the standard deviation of the gaussian applied.
     assert(patch_size%2==1);
-
-    // passing parameters to octave
-    
 
     printf("Non-local means filtering...\n");
     float *filtered_image_array;
@@ -56,15 +53,9 @@ int main(int argc, char *argv[]) {
     filtered_image_array = non_local_means(m, n, noise_image_array, patch_size, filt_sigma, patch_sigma, argc, argv);
     TOC("\nTotal time elapsed filtering image: %lf\n")
 
-    // passing parameters and output to octave
-    FILE *parameters;
-    parameters = fopen("data/parameters.txt", "w");
-    fprintf(parameters, "%lf %d %lf", filt_sigma, patch_size, patch_sigma);
-    fclose(parameters);
-
     printf("\nWriting output data to file...\n");
     FILE *filtered_image_file;
-    filtered_image_file = fopen("data/filtered_image.txt", "w");
+    filtered_image_file = fopen("data/filtered_image_v0.txt", "w");
     print_array_file(filtered_image_file, filtered_image_array, m, n);
     fclose(filtered_image_file);
 

@@ -55,7 +55,9 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     //gridSize = 32*numSMs;
 
     printf("Filtering...\n");
-    blockSize /= 8; // optimization: instruction level parallelism
+    blockSize /= 8; // optimization: give more load to each thread
+    blockSize = 32;
+    gridSize = 256;
     printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);    
     filtering<<<gridSize, blockSize>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 

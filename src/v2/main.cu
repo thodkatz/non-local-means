@@ -55,13 +55,6 @@ int main(int argc, char *argv[]) {
     non_local_means(filtered_image_array, m, n, noise_image_array, patch_size, filt_sigma, patch_sigma, argc, argv);
     TOC("\nTotal time elapsed filtering image: %lf\n")
 
-    // passing parameters and output to octave
-
-    FILE *parameters;
-    parameters = fopen("data/parameters.txt", "w");
-    fprintf(parameters, "%lf %d %lf", filt_sigma, patch_size, patch_sigma);
-    fclose(parameters);
-
     printf("\nWriting output data to file...\n");
     FILE *filtered_image_file;
     filtered_image_file = fopen("data/filtered_image_v2.txt", "w");

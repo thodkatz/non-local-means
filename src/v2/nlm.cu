@@ -56,12 +56,13 @@ void non_local_means(float *filtered_image, int m, int n, float *noise_image, in
     cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, device);
     //gridSize = 32*numSMs;
 
-    blockSize = 32; 
-    gridSize = 256;
+    blockSize /= 8;
+    printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);    
 
     printf("Filtering...\n");
-    printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);    
-    filtering<<<gridSize, blockSize>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
+    int dynamic_shared_size = 2*(total_patch_size * blockSize)*sizeof(float);
+    printf("Dynamic shared: %f\n", dynamic_shared_size);
+    filtering<<<gridSize, blockSize, dynamic_shared_size>>>(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
     cudaDeviceSynchronize();
 
