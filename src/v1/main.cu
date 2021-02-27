@@ -45,9 +45,11 @@ int main(int argc, char* argv[])
     // print_array(noise_image_array, m, n);
 
     float filt_sigma  = 0.02;
-    int patch_size    = atoi(argv[2]); // one dimension of a 2d square patch
-    float patch_sigma = 5.0 / 3.0;     // patch sigma is for the gaussian weight applied per patch. It is the standard
-                                       // deviation of the gaussian applied.
+    int patch_size    = atoi(argv[2]);
+    int block_size    = atoi(argv[3]);
+    int threads       = atoi(argv[4]);
+    float patch_sigma = 5.0 / 3.0; // patch sigma is for the gaussian weight applied per patch. It is the standard
+                                   // deviation of the gaussian applied.
     assert(patch_size % 2 == 1);
 
     printf("Non-local means filtering...\n");
@@ -57,6 +59,20 @@ int main(int argc, char* argv[])
     TIC()
     non_local_means(filtered_image_array, m, n, noise_image_array, patch_size, filt_sigma, patch_sigma, argc, argv);
     TOC("\nTotal time elapsed filtering image: %lf\n")
+
+    /* ------------------------------ Save results ------------------------------ */
+
+    char* resultsPath = "./results/results.csv";
+    FILE* fp;
+
+    if ((fp = fopen(resultsPath, "a+")) == NULL) {
+        printf("File does not exist.\nExiting...");
+        exit(1);
+    }
+
+    fprintf(fp, "%s,%s,%d,%d,%d,%lf\n", argv[0], argv[1], patch_size, block_size, threads, diff_time(tic, toc));
+
+    /* ---------------------------------- Other --------------------------------- */
 
     printf("\nWriting output data to file...\n");
     FILE* filtered_image_file;
