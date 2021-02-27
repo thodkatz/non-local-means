@@ -41,7 +41,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     TOC("Time elapsed applying guassian patch: %lf\n")
 
     float *filtered_image;
-    MALLOC(float, filtered_image, total_pixels);
+    CALLOC(float, filtered_image, total_pixels);
     printf("Filtering...\n");
     yet_another_filtering_symmetric(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
@@ -147,7 +147,8 @@ void yet_another_filtering_symmetric(float *patches, int patch_size, float filt_
     int total_patch_size = patch_size * patch_size;
 
     // is it worthy to keep track of the maximum weight per pixel tho? Better results?
-    float max_until_pixel[total_pixels] = {-1.0};
+    float max_until_pixel[total_pixels];
+    for(int i = 0; i < total_pixels; i++) max_until_pixel[i] = -1.0;
     float sum_weights_until_pixel[total_pixels]= {0};
 
     for(int pixel = 0; pixel < total_pixels; pixel++) {
@@ -184,7 +185,6 @@ void yet_another_filtering_symmetric(float *patches, int patch_size, float filt_
 #else
             filtered_image[i] += weight;
 #endif
-
             max_until_pixel[i] = MAX(max_until_pixel[i], weight);
         }
 

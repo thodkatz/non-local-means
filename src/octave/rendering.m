@@ -34,12 +34,6 @@ if length(args) == 2
     DebugFlag = args{2};
 end
 
-if version == 'v0'
-    fprintf("\n\033[1mC CODE LAUNCHED...\033[0m\n");
-    system("make v0");
-    system(["./bin/v0" ' ' DebugFlag]);
-end
-
 % VALIDATION
 if DebugFlag == '--debug'
     fprintf("Validation...\n");
