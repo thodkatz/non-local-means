@@ -15,6 +15,7 @@ int main(int argc, char* argv[])
         printf("Bad arguments\n");
         printf("USAGE ./bin/v1 <noised_image.txt> <patch size> <grid size> <block size> --debug\n");
         printf("--debug is optional\n");
+        exit(-1);
     }
 
     FILE* noise_image_file;

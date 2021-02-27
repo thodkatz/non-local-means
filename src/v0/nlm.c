@@ -48,7 +48,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     // debugging
     
     FILE *debug_patches;
-    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
+    if(argc == 4 && strcmp(argv[3],"--debug") == 0) {
         printf("Writing patches to file. Mode: \033[1mdebug\033[0m...\n");
         debug_patches = fopen("data/debug/v0/patches_c.txt", "w");
         print_patch_file(debug_patches, patches, patch_size, m*n);
@@ -56,7 +56,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     }
 
     FILE *debug_filtering;
-    if(argc == 2 && strcmp(argv[1],"--debug") == 0) {
+    if(argc == 4 && strcmp(argv[3],"--debug") == 0) {
         printf("Writing filtering image to file. Mode: \033[1mdebug\033[0m...\n");
         debug_filtering = fopen("data/debug/v0/filtered_image_c.txt", "w");
         print_array_file(debug_filtering, filtered_image, m, n);
@@ -72,7 +72,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
 
 void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
     for(int pixel = 0; pixel < total_pixels; pixel++) {
-        printf("Pixel: %d\n", pixel);
+        //printf("Pixel: %d\n", pixel);
 
         // M x N (total pixels) memory required
         float *weights;
@@ -101,7 +101,7 @@ void yet_another_filtering(float *patches, int patch_size, float filt_sigma, flo
     int total_patch_size = patch_size * patch_size;
 
     for(int pixel = 0; pixel < total_pixels; pixel++) {
-        printf("Pixel: %d\n", pixel);
+        //printf("Pixel: %d\n", pixel);
 
         float weight = 0;
         float filtered_value = 0;
@@ -151,7 +151,7 @@ void yet_another_filtering_symmetric(float *patches, int patch_size, float filt_
     float sum_weights_until_pixel[total_pixels]= {0};
 
     for(int pixel = 0; pixel < total_pixels; pixel++) {
-        printf("Pixel: %d\n", pixel);
+        //printf("Pixel: %d\n", pixel);
 
         float weight = 0;
         float filtered_value = 0;

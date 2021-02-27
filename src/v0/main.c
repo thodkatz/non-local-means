@@ -10,14 +10,14 @@ int main(int argc, char *argv[]) {
 
     printf(CYN "VERSION 0\n" RESET);
 
-    if(argc == 2 && strcmp(argv[1], "--debug") != 0) {
-        printf("Bad arguments. If --debug option desired then:\n");
-        printf("USAGE ./bin/v0 --debug\n");
-        exit(-1);
+    if (argc < 3) {
+        printf("Bad arguments\n");
+        printf("USAGE ./bin/v0 <noised_image.txt> <patch size> --debug\n");
+        printf("--debug is optional\n");
     }
 
     FILE *noise_image_file;
-    if((noise_image_file = fopen("data/noise_image_lena_const.txt", "r")) == NULL) { 
+    if((noise_image_file = fopen(argv[1], "r")) == NULL) { 
         printf("Can't open file\n");
         exit(-1);  
     }
@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
     //print_array(noise_image_array, m, n);
 
     float filt_sigma = 0.02;
-    int patch_size = 7; // one dimension of a 2d square patch
+    int patch_size = atoi(argv[2]); // one dimension of a 2d square patch
     float patch_sigma = 5.0/3.0; // patch sigma is for the gaussian weight applied per patch. It is the standard deviation of the gaussian applied.
     assert(patch_size%2==1);
 

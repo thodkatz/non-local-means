@@ -40,7 +40,8 @@ void print_array_file(FILE* f, float* array, int row, int col)
             else
                 fprintf(f, "%0.5f", array[i * col + j]);
         }
-        fprintf(f, "\n");
+        if (i != row - 1)
+            fprintf(f, "\n");
     }
 }
 
