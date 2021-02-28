@@ -17,7 +17,8 @@ Under the directory you just cloned/download the repository, run the script `./r
 # Validation
 
 In early stages of development, we need to be sure that our CPU implementation in C is working in the same way with the tested Matlab implementation. So we had the following validation pipeline:
-![validation](docs/validation.png)
+![validation](https://user-images.githubusercontent.com/6664730/109432641-c8b26080-7a14-11eb-9dd7-fb068f909ce3.png)
+
 
 If you are going to pass `--debug` option then specific steps of the Octave script implementation of the non-local-means filter will be compared with the equivalent C implementation. As it is depicted, we check for 1) Patch creation, 2) Distances, 3) Weights, and finally 4) Filtering. For distances, we are referring to the euclidean distance between patches (D) and for the weights, the final weight value (w = exp(-D^2./sigma)) that will be applied to the noised image.
 
