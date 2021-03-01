@@ -4,6 +4,7 @@
 #include <string.h>
 #include "v1.h"
 #include "utils.cuh"
+#include <assert.h>
 
 void non_local_means(float* filtered_image,
                      int m,
@@ -50,6 +51,7 @@ void non_local_means(float* filtered_image,
     gridSize                = atoi(argv[3]);
     blockSize               = atoi(argv[4]);
     int dynamic_shared_size = 2 * (total_patch_size * blockSize) * sizeof(float);
+    assert(dynamic_shared_size<=49000); // tailored to GPU
 
     printf("Current blockSize: %d and gridSize: %d\n", blockSize, gridSize);
     printf("Dynamic shared: %d\n", dynamic_shared_size);

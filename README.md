@@ -1,27 +1,43 @@
+# Introduction
+
+[Non-Local Means for Image Denoising using CUDA](report/report.pdf)
+
 # Prerequisites
 
 - Octave/Matlab
-- CUDA
+- NVIDIA GPU and CUDA
 
-It is tested in a Linux environment with Octave.
+# Usage
+``` shell
+$ make <version>
+```
 
-# Compile and run
-
-Under the directory you just cloned/download the repository, run the script `./run.sh`.
-
-## Options
-
-- `./run.sh <version>`. Available versions v0, v1, v2. Use v1 and v2 only if there is a machine that can fulfill the prerequisites. In the current implementation v1 and v2 are supposed to run on another machine. Differently, modify the `src/octave/pipeline.m` when C versions are invoked via the Octave script.
-- `./run.sh <version> --debug`
+If requirements are fulfilled then in the root directory:
+``` shell
+$ octave src/octave/pipeline.m <version name: v0 or v1 or v2> <args>
+$ octave src/octave/pipeline.m v0 data/<image_file.jpg> <patch size>
+$ octave src/octave/pipeline.m <v1 or v2> data/<image_file.jpg> <patch size> <grid size> <block size>
+```
+If requirements are not fulfilled, for CUDA versions *v1, v2* we can break the execution in three steps:
+``` shell
+octave src/octave/jpg2array.m <image_file.jpg> # create a noised image represented in a 2d array
+```
+In a compatible CUDA system (e.g. Google Colab):
+``` shell
+$ make <version: v1 or v2>
+$ ./bin/<version> data/noise_image.txt <patch size> <grid size> <block size>
+```
+Rendering the filtered image:
+``` shell
+$ octave src/octave/rendering.m <version>
+```
 
 # Validation
 
-In early stages of development, we need to be sure that our CPU implementation in C is working in the same way with the tested Matlab implementation. So we had the following validation pipeline:
+In **early** stages of development, we need to be sure that our CPU implementation in C is working in the same way with a given tested Matlab implementation. So we had the following validation pipeline:
+
 ![validation](https://user-images.githubusercontent.com/6664730/109432641-c8b26080-7a14-11eb-9dd7-fb068f909ce3.png)
 
+In the **current** state, we check only for CUDA versions, the filtered values with respect to CPU version. If requirements are fulfilled then for validation check, run the `pipeline.m` script, passing as a **last argument**: `--debug`.
 
-If you are going to pass `--debug` option then specific steps of the Octave script implementation of the non-local-means filter will be compared with the equivalent C implementation. As it is depicted, we check for 1) Patch creation, 2) Distances, 3) Weights, and finally 4) Filtering. For distances, we are referring to the euclidean distance between patches (D) and for the weights, the final weight value (w = exp(-D^2./sigma)) that will be applied to the noised image.
-
-Later on, considering memory storage, we focused on patches creation and the final output of the filtering. We compare v0 with v1 and v2 without the need of running the Matlab script. The pipeline in our case due to the lack of NVIDIA should be staged in two parts. First run the CUDA versions in a CUDA capable machine and then later fetch the log files and then run the `./run.sh v1 --debug` script.
-
-Due to floating point arithmetic, we have some different values regarding the above. So we assume valid a difference less than 0.0001. 
+Due to floating point arithmetic and the usage of *-use_fast_math* compiler flag, different values have been spotted. We assume valid a difference less than 1e-4. 

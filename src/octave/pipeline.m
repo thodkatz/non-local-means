@@ -30,10 +30,9 @@ if (version == 'v1' || version == 'v2') && length(args) < 5
     exit;
 end;
 
+# For v1,v2 validation check
 DebugFlag = ' ';
-if length(args) == 4
-    DebugFlag = args{4};
-elseif length(args) == 6
+if length(args) == 6
     DebugFlag = args{6};
 end
 
@@ -73,9 +72,6 @@ dlmwrite([path 'noise_image.txt'], J, '-append', 'delimiter', ' ', 'precision', 
 fprintf("\n\033[1mC CODE LAUNCHED...\033[0m\n");
 if version == 'v0'
     exe = ["./bin/" version ' ' path "noise_image.txt " patchSize];
-    if length(args) == 4 && args{4} == "--debug"
-        exe = [exe " --debug"];
-    end
 else
     exe = ["./bin/" version ' ' path "noise_image.txt " patchSize ' ' args{4} ' ' args{5}];
     if length(args) == 6 && args{6} == "--debug"
@@ -92,6 +88,8 @@ fprintf("\033[1mC CODE ENDED...\033[0m\n\n");
 % VALIDATION BASED ON v0
 if DebugFlag == '--debug'
     fprintf("Validation...\n");
+
+    system(["./bin/v0" path "noise_image.txt " patchSize ' ' DebugFlag]);
 
     % CHECK FILTERED IMAGE
     Filtered1      = dlmread([path 'debug/' version '/filtered_image_c.txt']);
