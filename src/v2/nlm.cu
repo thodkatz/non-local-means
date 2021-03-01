@@ -5,15 +5,6 @@
 #include "v1.h"
 #include "utils.cuh"
 
-/*
- * For the pixels in the edges, patch  size extends image.
- * Fill the missing values with this flag/macro.
- *
- * TODO: how to make use of missing values in "special" patches? Wrap the image?
- */
-#define OUT_OF_BOUNDS -1.0
-
-// expecting only even number of patch size
 void non_local_means(float* filtered_image,
                      int m,
                      int n,
@@ -56,15 +47,6 @@ void non_local_means(float* filtered_image,
     cudaOccupancyMaxPotentialBlockSize(&gridSize, &blockSize, (void*)filtering, 0, 0);
     printf("Best grid size: %d\nBest block size: %d\n", gridSize, blockSize);
 
-    // source: https://developer.nvidia.com/blog/cuda-pro-tip-write-flexible-kernels-grid-stride-loops/
-    int numSMs, device;
-    cudaGetDevice(&device);
-    cudaDeviceGetAttribute(&numSMs, cudaDevAttrMultiProcessorCount, device);
-    // gridSize = 32*numSMs;
-
-    // blockSize = 256;
-    // gridSize = (total_pixels + blockSize - 1)/blockSize;
-
     gridSize                = atoi(argv[3]);
     blockSize               = atoi(argv[4]);
     int dynamic_shared_size = 2 * (total_patch_size * blockSize) * sizeof(float);
@@ -79,14 +61,6 @@ void non_local_means(float* filtered_image,
     cudaDeviceSynchronize();
 
     // debugging
-
-    FILE* debug_patches;
-    if (argc == 6 && strcmp(argv[5], "--debug") == 0) {
-        printf("Writing patches to file. Mode: \033[1mdebug\033[0m...\n");
-        debug_patches = fopen("data/debug/v1/patches_c.txt", "w");
-        print_patch_file(debug_patches, patches, patch_size, m * n);
-        fclose(debug_patches);
-    }
 
     FILE* debug_filtering;
     if (argc == 6 && strcmp(argv[5], "--debug") == 0) {

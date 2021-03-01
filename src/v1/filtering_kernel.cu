@@ -64,7 +64,8 @@ __device__ float euclidean_distance_patch(float* patch1, float* patch2, int patc
 }
 
 // making use of the symmetric property of the weights requires thread communication. The disrupted view of the weights
-// and the need of global writes will result eventually to poor performance WARNING: the following function doesn't work
+// and the need of global writes will result eventually to poor performance 
+// WARNING: the following function doesn't work
 __global__ void yet_another_filtering(
     float* patches, int patch_size, float filt_sigma, float* noise_image, const int total_pixels, float* filtered_image)
 {

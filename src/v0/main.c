@@ -22,6 +22,9 @@ int main(int argc, char *argv[]) {
         exit(-1);  
     }
 
+    int patch_size = atoi(argv[2]); 
+    assert(patch_size%2==1);
+
     struct timespec tic;
     struct timespec toc;
 
@@ -43,9 +46,7 @@ int main(int argc, char *argv[]) {
     //print_array(noise_image_array, m, n);
 
     float filt_sigma = 0.02;
-    int patch_size = atoi(argv[2]); // one dimension of a 2d square patch
-    float patch_sigma = 5.0/3.0; // patch sigma is for the gaussian weight applied per patch. It is the standard deviation of the gaussian applied.
-    assert(patch_size%2==1);
+    float patch_sigma = 5.0/3.0; 
 
     printf("Non-local means filtering...\n");
     float *filtered_image_array;

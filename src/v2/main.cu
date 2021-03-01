@@ -24,6 +24,11 @@ int main(int argc, char* argv[])
         exit(-1);
     }
 
+    int patch_size    = atoi(argv[2]);
+    int block_size    = atoi(argv[3]);
+    int threads       = atoi(argv[4]);
+    assert(patch_size % 2 == 1);
+
     struct timespec tic;
     struct timespec toc;
 
@@ -45,21 +50,15 @@ int main(int argc, char* argv[])
     // print_array(noise_image_array, m, n);
 
     float filt_sigma  = 0.02;
-    int patch_size    = atoi(argv[2]);
-    int block_size    = atoi(argv[3]);
-    int threads       = atoi(argv[4]);
-    float patch_sigma = 5.0 / 3.0; // patch sigma is for the gaussian weight applied per patch. It is the standard
-                                   // deviation of the gaussian applied.
-    assert(patch_size % 2 == 1);
+    float patch_sigma = 5.0 / 3.0; 
 
     printf("Non-local means filtering...\n");
     float* filtered_image_array;
     cudaMallocManaged(&filtered_image_array, m * n * sizeof(float));
-    // for(int i = 0; i<total_pixels;i++) filtered_image_array[i] = 0; required for yet_another_filtering in
-    // filtering_kernel.cu
     TIC()
     non_local_means(filtered_image_array, m, n, noise_image_array, patch_size, filt_sigma, patch_sigma, argc, argv);
     TOC("\nTotal time elapsed filtering image: %lf\n")
+
 
     /* ------------------------------ Save results ------------------------------ */
 
