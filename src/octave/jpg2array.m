@@ -21,8 +21,6 @@ normImg = @(I) (I - min(I(:))) ./ max(I(:) - min(I(:)));
 
 fprintf('Loading input data...\n')
 
-% DEPENDING THE TYPE OF THE IMAGE YOU NEED TO TUNE IT A LITTLE BIT. RGB? SIZE?
-
 image = args{1};
 I = imread(image);
 %I = rgb2gray(I);

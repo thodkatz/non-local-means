@@ -43,18 +43,10 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
     float *filtered_image;
     CALLOC(float, filtered_image, total_pixels);
     printf("Filtering...\n");
-    yet_another_filtering_symmetric(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
+    filtering(patches, patch_size, filt_sigma, noise_image, total_pixels, filtered_image);
 
     // debugging
     
-    FILE *debug_patches;
-    if(argc == 4 && strcmp(argv[3],"--debug") == 0) {
-        printf("Writing patches to file. Mode: \033[1mdebug\033[0m...\n");
-        debug_patches = fopen("data/debug/v0/patches_c.txt", "w");
-        print_patch_file(debug_patches, patches, patch_size, m*n);
-        fclose(debug_patches);
-    }
-
     FILE *debug_filtering;
     if(argc == 4 && strcmp(argv[3],"--debug") == 0) {
         printf("Writing filtering image to file. Mode: \033[1mdebug\033[0m...\n");
@@ -70,7 +62,7 @@ float *non_local_means(int m, int n, float *noise_image, int patch_size, float f
 }
 
 
-void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
+void filtering_naive(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
     for(int pixel = 0; pixel < total_pixels; pixel++) {
         //printf("Pixel: %d\n", pixel);
 
@@ -97,53 +89,7 @@ void filtering(float *patches, int patch_size, float filt_sigma, float *noise_im
     }
 }
 
-void yet_another_filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
-    int total_patch_size = patch_size * patch_size;
-
-    for(int pixel = 0; pixel < total_pixels; pixel++) {
-        //printf("Pixel: %d\n", pixel);
-
-        float weight = 0;
-        float filtered_value = 0;
-        
-        // is it worthy to find the maximum?
-#define MAXIMUM
-
-#ifdef MAXIMUM
-        float max = -1.0;
-#endif
-        float sum_weights = 0;
-
-        for(int i = 0; i < total_pixels; i++) {
-            weight = euclidean_distance_patch(patches + pixel*total_patch_size, patches + i*total_patch_size, patch_size);
-            weight = exp(-pow(weight, 2) / filt_sigma);
-#ifdef MAXIMUM
-            max = (weight > max && i!=pixel) ? weight : max;
-#endif
-            sum_weights += weight;
-
-            float noise_pixel = *(patches + i*total_patch_size + total_patch_size/2);
-            filtered_value += weight * noise_pixel;
-        }
-
-        // neglect the weight of self distance 
-#ifdef MAXIMUM
-        sum_weights -= 1;
-        sum_weights += max;
-#endif
-
-#ifdef MAXIMUM
-        float noise_pixel = *(patches + pixel*total_patch_size + total_patch_size/2);
-        filtered_value -= noise_pixel;
-        filtered_value += max*noise_pixel;
-#endif
-        filtered_value /= sum_weights;
-
-        filtered_image[pixel] = filtered_value;
-    }
-}
-
-void yet_another_filtering_symmetric(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
+void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image) {
     int total_patch_size = patch_size * patch_size;
 
     // is it worthy to keep track of the maximum weight per pixel tho? Better results?

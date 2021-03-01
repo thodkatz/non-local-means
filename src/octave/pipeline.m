@@ -16,6 +16,27 @@ pkg load image statistics
 path = './data/';
 args = argv();
 
+if length(args) < 3
+    printf("Bad arguments\n");
+    exit;
+end
+
+version = args{1};
+imageFile = args{2};
+patchSize = args{3};
+
+if (version == 'v1' || version == 'v2') && length(args) < 5
+    printf("Bad arguments\n");
+    exit;
+end;
+
+DebugFlag = ' ';
+if length(args) == 4
+    DebugFlag = args{4};
+elseif length(args) == 6
+    DebugFlag = args{6};
+end
+
 normImg = @(I) (I - min(I(:))) ./ max(I(:) - min(I(:)));
 
 fprintf('Loading input data...\n')
@@ -28,7 +49,7 @@ fprintf('Loading input data...\n')
 
 %I = dlmread([path 'house.txt']); 
 
-I = imread([path 'house.jpg']);
+I = imread(imageFile);
 %I = rgb2gray(I);
 %I = imresize(I, [128 128]);
 %imwrite(I, [path 'tulips128.jpg']);
@@ -46,52 +67,34 @@ J = imnoise(I, 'gaussian', 0, 0.002);
 %J = dlmread([path 'noise_image_house_const.txt']);
 %dlmwrite([path 'noise_image_house_const.txt'], J, 'delimiter', ' ', 'precision', '%.06f');
 
-fprintf("Input ready to be parsed from our C code\n");
 dlmwrite([path 'noise_image.txt'], size(J), 'delimiter', ' ');
 dlmwrite([path 'noise_image.txt'], J, '-append', 'delimiter', ' ', 'precision', '%.06f');
 
-DebugFlag = ' ';
-if length(args) == 2
-    DebugFlag = args{2}
-end
-
-% NON LOCAL MEANS IMPLEMENTED IN C
 fprintf("\n\033[1mC CODE LAUNCHED...\033[0m\n");
-exe = ["./bin/" args{1}];
-if length(args) == 2
-    exe = ["./bin/" args{1} ' ' DebugFlag];
+if version == 'v0'
+    exe = ["./bin/" version ' ' path "noise_image.txt " patchSize];
+    if length(args) == 4 && args{4} == "--debug"
+        exe = [exe " --debug"];
+    end
+else
+    exe = ["./bin/" version ' ' path "noise_image.txt " patchSize ' ' args{4} ' ' args{5}];
+    if length(args) == 6 && args{6} == "--debug"
+        exe = [exe " --debug"];
+    end
 end
-
-% AS A NON NVIDIA USER I CANT USE THIS SCRIPT LOCALLY FOR CUDA VERSIONS
+system(["make " version]);
 system(exe); 
 
 % READ THE OUTPUT OF THE NON LOCAL MEANS IMPLEMENTED IN C
-If = dlmread([path 'filtered_image' args{1} '.txt']);
+If = dlmread([path 'filtered_image_' version '.txt']);
 fprintf("\033[1mC CODE ENDED...\033[0m\n\n");
 
 % VALIDATION BASED ON v0
 if DebugFlag == '--debug'
     fprintf("Validation...\n");
 
-    %cd src/octave/
-    % NON LOCAL MEANS IMPLEMENTED IN OCTAVE/MATLAB
-    %IfOctave = nonLocalMeans(J, patchSize, filtSigma, patchSigma);
-
-    % CHECK IF PATCHES ARE THE SAME
-    Patches1      = dlmread([path 'debug/' args{1} '/patches_c.txt']);
-    Patches2      = dlmread([path 'debug/v0/patches_c.txt']);
-    ErrorPatches = abs(Patches1 - Patches2);
-    ErrorPatches = max(ErrorPatches(:));
-
-    if ErrorPatches < 0.001
-        fprintf("\x1B[32m \xE2\x9C\x94 Patches \x1B[0m\n");
-    elseif
-        fprintf("\x1B[31m \xE2\x9D\x8C Patches \x1B[0m\n"); 
-        fprintf("Patches error: %f\n", ErrorPatches);
-    end
-
     % CHECK FILTERED IMAGE
-    Filtered1      = dlmread([path 'debug/' args{1} '/filtered_image_c.txt']);
+    Filtered1      = dlmread([path 'debug/' version '/filtered_image_c.txt']);
     Filtered2      = dlmread([path 'debug/v0/filtered_image_c.txt']);
     ErrorFiltering = abs(Filtered1 - Filtered2);
     ErrorFiltering = max(ErrorFiltering(:));

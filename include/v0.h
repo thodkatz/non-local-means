@@ -13,11 +13,9 @@ float* non_local_means(int m,
                        int argc,
                        char* argv[]);
 
-void filtering(
+void filtering_naive(
     float* patches, int patch_size, float filt_sigma, float* noise_image, int total_pixels, float* filtered_image);
 
-void yet_another_filtering_symmetric(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image);
-
-void yet_another_filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image);
+void filtering(float *patches, int patch_size, float filt_sigma, float *noise_image, int total_pixels, float *filtered_image);
 
 #endif
